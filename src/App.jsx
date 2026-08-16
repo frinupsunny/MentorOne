@@ -1,22 +1,70 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import CoordinatorLayout from "./layouts/CoordinatorLayout";
+
+import Dashboard from "./pages/Coordinator/Dashboard";
+import MyMentors from "./pages/Coordinator/MyMentors";
+import MentorDetails from "./pages/Coordinator/MentorDetails";
+import MyMentees from "./pages/Coordinator/MyMentees";
+import MenteeDetails from "./pages/Coordinator/MenteeDetails";
+import AssignMentees from "./pages/Coordinator/AssignMentees";
 
 function App() {
   return (
-    <CoordinatorLayout>
-      <div className="p-6">
+    <BrowserRouter>
+      <CoordinatorLayout>
+        <Routes>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-8">
-          <h2 className="text-2xl font-semibold text-white">
-            Coordinator Dashboard
-          </h2>
+          {/* Coordinator Dashboard */}
+          <Route
+            path="/coordinator"
+            element={<Dashboard />}
+          />
 
-          <p className="mt-2 text-slate-400">
-            Dashboard content will be added next.
-          </p>
-        </div>
+          {/* My Mentors */}
+          <Route
+            path="/coordinator/mentors"
+            element={<MyMentors />}
+          />
 
-      </div>
-    </CoordinatorLayout>
+          {/* Mentor Details */}
+          <Route
+            path="/coordinator/mentors/:mentorId"
+            element={<MentorDetails />}
+          />
+
+          {/* My Mentees */}
+          <Route
+            path="/coordinator/mentees"
+            element={<MyMentees />}
+          />
+
+          {/* Mentee Details */}
+          <Route
+            path="/coordinator/mentees/:menteeId"
+            element={<MenteeDetails />}
+          />
+
+          {/* Assign Mentees */}
+          <Route
+            path="/coordinator/assign-mentees"
+            element={<AssignMentees />}
+          />
+          
+          {/* Default */}
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/coordinator"
+                replace
+              />
+            }
+          />
+
+        </Routes>
+      </CoordinatorLayout>
+    </BrowserRouter>
   );
 }
 
