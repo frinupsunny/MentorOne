@@ -8,6 +8,13 @@ import MentorDetails from "./pages/Coordinator/MentorDetails";
 import MyMentees from "./pages/Coordinator/MyMentees";
 import MenteeDetails from "./pages/Coordinator/MenteeDetails";
 import AssignMentees from "./pages/Coordinator/AssignMentees";
+import Notifications from "./pages/Coordinator/Notifications";
+import Remarks from "./pages/Coordinator/Remarks";
+import Feedback from "./pages/Coordinator/Feedback";
+import Reports from "./pages/Coordinator/Reports";
+import Calendar from "./pages/Coordinator/Calendar";
+import Documents from "./pages/Coordinator/Documents";
+import Settings from "./pages/Coordinator/Settings";
 
 function App() {
   return (
@@ -49,6 +56,49 @@ function App() {
           <Route
             path="/coordinator/assign-mentees"
             element={<AssignMentees />}
+          />
+
+          {/* Notifications */}
+          <Route
+            path="/coordinator/notifications"
+            element={<Notifications />}
+          />
+
+          {/* Remarks */}
+          <Route
+            path="/coordinator/remarks"
+            element={<Remarks />}
+          />
+
+          {/* Feedback */}
+          <Route
+            path="/coordinator/feedback"
+            element={<Feedback />}
+          />
+
+          {/* Reports */}
+          <Route
+            path="/coordinator/reports"
+            element={<Reports />}
+          />
+
+
+          {/* Calendar */}
+          <Route
+            path="/coordinator/calendar"
+            element={<Calendar />}
+          />
+
+          {/* Documents */}
+          <Route
+            path="/coordinator/documents"
+            element={<Documents />}
+          />
+
+          {/* Settings */}
+          <Route
+            path="/coordinator/settings"
+            element={<Settings />}
           />
           
           {/* Default */}

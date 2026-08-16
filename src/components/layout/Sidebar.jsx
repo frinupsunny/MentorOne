@@ -41,37 +41,45 @@ function Sidebar() {
 ];
 
   const activityItems = [
-    {
-      label: "Notifications",
-      icon: FiBell,
-      badge: 3,
-    },
-    {
-      label: "Remarks",
-      icon: FiBookOpen,
-    },
-    {
-      label: "Feedback",
-      icon: FiStar,
-    },
-    {
-      label: "Reports",
-      icon: FiBarChart2,
-    },
+  {
+    label: "Notifications",
+    icon: FiBell,
+    badge: 3,
+    path: "/coordinator/notifications",
+  },
+  {
+    label: "Remarks",
+    icon: FiBookOpen,
+    path: "/coordinator/remarks",
+  },
+  
+  {
+    label: "Feedback",
+    icon: FiStar,
+    path: "/coordinator/feedback",
+  },
+  {
+    label: "Reports",
+    icon: FiBarChart2,
+    path: "/coordinator/reports",
+  },
   ];
 
   const workspaceItems = [
     {
       label: "Calendar",
       icon: FiCalendar,
+      path: "/coordinator/calendar",
     },
     {
       label: "Documents",
       icon: FiFileText,
+      path: "/coordinator/documents",
     },
     {
       label: "Settings",
       icon: FiSettings,
+      path: "/coordinator/settings",
     },
   ];
 
