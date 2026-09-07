@@ -13,8 +13,8 @@ import Remarks from "./pages/Coordinator/Remarks";
 import Feedback from "./pages/Coordinator/Feedback";
 import Reports from "./pages/Coordinator/Reports";
 import Calendar from "./pages/Coordinator/Calendar";
-import Documents from "./pages/Coordinator/Documents";
-import Settings from "./pages/Coordinator/Settings";
+import HODNotices from "./pages/Coordinator/HODNotices";
+
 
 function App() {
   return (
@@ -88,17 +88,10 @@ function App() {
             path="/coordinator/calendar"
             element={<Calendar />}
           />
-
-          {/* Documents */}
+          {/* HOD Notices */}
           <Route
-            path="/coordinator/documents"
-            element={<Documents />}
-          />
-
-          {/* Settings */}
-          <Route
-            path="/coordinator/settings"
-            element={<Settings />}
+            path="/coordinator/hod-notices"
+            element={<HODNotices />}
           />
           
           {/* Default */}

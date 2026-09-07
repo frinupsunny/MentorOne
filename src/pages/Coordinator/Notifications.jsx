@@ -1,396 +1,509 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   FiBell,
-  FiCheckCircle,
-  FiAlertTriangle,
-  FiUserPlus,
-  FiCalendar,
-  FiMessageSquare,
-  FiFileText,
+  FiSearch,
   FiCheck,
+  FiCheckCircle,
   FiTrash2,
+  FiAlertTriangle,
+  FiUsers,
+  FiCalendar,
+  FiArrowRight,
+  FiX,
+  FiClock,
+  FiExternalLink,
 } from "react-icons/fi";
 
-const initialNotifications = [
-  {
-    id: 1,
-    type: "connection",
-    title: "New mentor–mentee connection request",
-    message:
-      "Sanjay K has requested to connect with Dr. Vivek.",
-    time: "10 minutes ago",
-    unread: true,
-  },
-  {
-    id: 2,
-    type: "alert",
-    title: "Non-compliant mentor–mentee pair",
-    message:
-      "The pair of Dr. Anitha and Jasmine A has missed the required mentoring activity.",
-    time: "1 hour ago",
-    unread: true,
-  },
-  {
-    id: 3,
-    type: "session",
-    title: "Session requires attention",
-    message:
-      "A mentoring session scheduled for today has not been confirmed.",
-    time: "2 hours ago",
-    unread: true,
-  },
-  {
-    id: 4,
-    type: "assignment",
-    title: "New mentee assignment",
-    message:
-      "Megha S has been assigned to Dr. Sunita.",
-    time: "Yesterday",
-    unread: false,
-  },
-  {
-    id: 5,
-    type: "feedback",
-    title: "New feedback submitted",
-    message:
-      "A mentee has submitted feedback after a recent mentoring session.",
-    time: "Yesterday",
-    unread: false,
-  },
-  {
-    id: 6,
-    type: "document",
-    title: "New document uploaded",
-    message:
-      "A mentor has uploaded a document for coordinator review.",
-    time: "2 days ago",
-    unread: false,
-  },
-];
-
 function Notifications() {
+  const navigate = useNavigate();
+
+  /* =====================================================
+     NOTIFICATION DATA
+  ===================================================== */
+
+  const initialNotifications = [
+    {
+      id: 1,
+      type: "important",
+      title: "HOD Notice: Semester mentoring schedule",
+      message:
+        "All mentors shall schedule mentoring sessions during regular instruction days. Minimum one session per month; weekly mentoring is recommended.",
+      time: "20 minutes ago",
+      date: "14 August 2026",
+      sender: "Dr. Helen Mathew · HOD",
+      category: "HOD Notice",
+      read: false,
+      action: "View HOD Notice",
+      actionPath: "/coordinator/hod-notices",
+    },
+
+    {
+      id: 2,
+      type: "warning",
+      title: "Critical mentoring issue requires attention",
+      message:
+        "An attendance shortage has been reported for a mentee. Please review the issue and take the necessary coordinator action.",
+      time: "1 hour ago",
+      date: "14 August 2026",
+      sender: "Dr. Ramesh Kumar · Mentor",
+      category: "Critical Issue",
+      read: false,
+      action: "Review Issue",
+      actionPath: "/coordinator/remarks",
+    },
+
+    {
+      id: 3,
+      type: "assignment",
+      title: "New mentee assignment completed",
+      message:
+        "Rahul Kumar has been assigned to Dr. Meena S successfully.",
+      time: "2 hours ago",
+      date: "14 August 2026",
+      sender: "MentorOne System",
+      category: "Assignment",
+      read: false,
+      action: "Manage Assignments",
+      actionPath: "/coordinator/assign-mentees",
+    },
+
+    {
+      id: 4,
+      type: "session",
+      title: "Mentoring session completed",
+      message:
+        "Dr. Ramesh Kumar completed a mentoring session with Jasmine A.",
+      time: "3 hours ago",
+      date: "14 August 2026",
+      sender: "MentorOne System",
+      category: "Session",
+      read: true,
+      action: "View Calendar",
+      actionPath: "/coordinator/calendar",
+    },
+
+    {
+      id: 5,
+      type: "warning",
+      title: "Mentor approaching capacity",
+      message:
+        "Dr. Ramesh Kumar currently has 18 mentees assigned out of a maximum capacity of 20.",
+      time: "Yesterday",
+      date: "13 August 2026",
+      sender: "MentorOne System",
+      category: "Capacity",
+      read: true,
+      action: "View Mentors",
+      actionPath: "/coordinator/mentors",
+    },
+
+    {
+      id: 6,
+      type: "feedback",
+      title: "New mentee feedback received",
+      message:
+        "New feedback has been submitted by a mentee and is available for coordinator review.",
+      time: "Yesterday",
+      date: "13 August 2026",
+      sender: "MentorOne System",
+      category: "Feedback",
+      read: true,
+      action: "View Feedback",
+      actionPath: "/coordinator/feedback",
+    },
+
+    {
+      id: 7,
+      type: "system",
+      title: "Monthly mentoring review reminder",
+      message:
+        "Please review mentor activity, session completion and compliance before the monthly review.",
+      time: "2 days ago",
+      date: "12 August 2026",
+      sender: "MentorOne System",
+      category: "Reminder",
+      read: true,
+      action: "View Reports",
+      actionPath: "/coordinator/reports",
+    },
+  ];
+
   const [notifications, setNotifications] = useState(
     initialNotifications
   );
 
-  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [selectedNotification, setSelectedNotification] =
+    useState(null);
+
+  /* =====================================================
+     COUNTS
+  ===================================================== */
 
   const unreadCount = notifications.filter(
-    (notification) => notification.unread
+    (notification) => !notification.read
   ).length;
 
-  const filteredNotifications = notifications.filter(
-    (notification) => {
-      if (filter === "unread") {
-        return notification.unread;
+  const readCount = notifications.filter(
+    (notification) => notification.read
+  ).length;
+
+  /* =====================================================
+     FILTER
+  ===================================================== */
+
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((notification) => {
+      const query = search.toLowerCase().trim();
+
+      const matchesSearch =
+        notification.title.toLowerCase().includes(query) ||
+        notification.message.toLowerCase().includes(query) ||
+        notification.category.toLowerCase().includes(query) ||
+        notification.sender.toLowerCase().includes(query);
+
+      let matchesFilter = true;
+
+      if (filter === "Unread") {
+        matchesFilter = !notification.read;
       }
 
-      return true;
-    }
-  );
+      if (filter === "Read") {
+        matchesFilter = notification.read;
+      }
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [notifications, search, filter]);
+
+  /* =====================================================
+     MARK AS READ
+  ===================================================== */
 
   const markAsRead = (id) => {
     setNotifications((current) =>
       current.map((notification) =>
         notification.id === id
-          ? {
-              ...notification,
-              unread: false,
-            }
+          ? { ...notification, read: true }
           : notification
       )
     );
   };
 
+  /* =====================================================
+     MARK ALL AS READ
+  ===================================================== */
+
   const markAllAsRead = () => {
     setNotifications((current) =>
       current.map((notification) => ({
         ...notification,
-        unread: false,
+        read: true,
       }))
     );
   };
 
-  const removeNotification = (id) => {
+  /* =====================================================
+     DELETE
+  ===================================================== */
+
+  const deleteNotification = (id) => {
     setNotifications((current) =>
       current.filter(
         (notification) => notification.id !== id
       )
     );
+
+    if (
+      selectedNotification &&
+      selectedNotification.id === id
+    ) {
+      setSelectedNotification(null);
+    }
   };
+
+  /* =====================================================
+     OPEN NOTIFICATION
+  ===================================================== */
+
+  const openNotification = (notification) => {
+    markAsRead(notification.id);
+    setSelectedNotification({
+      ...notification,
+      read: true,
+    });
+  };
+
+  /* =====================================================
+     ICON
+  ===================================================== */
 
   const getNotificationIcon = (type) => {
-    switch (type) {
-      case "connection":
-        return (
-          <FiUserPlus className="text-indigo-400" />
-        );
-
-      case "alert":
-        return (
-          <FiAlertTriangle className="text-amber-400" />
-        );
-
-      case "session":
-        return (
-          <FiCalendar className="text-purple-400" />
-        );
-
-      case "assignment":
-        return (
-          <FiCheckCircle className="text-emerald-400" />
-        );
-
-      case "feedback":
-        return (
-          <FiMessageSquare className="text-blue-400" />
-        );
-
-      case "document":
-        return (
-          <FiFileText className="text-teal-400" />
-        );
-
-      default:
-        return (
-          <FiBell className="text-slate-400" />
-        );
+    if (type === "important") {
+      return <FiBell />;
     }
+
+    if (type === "warning") {
+      return <FiAlertTriangle />;
+    }
+
+    if (type === "assignment") {
+      return <FiUsers />;
+    }
+
+    if (type === "session") {
+      return <FiCalendar />;
+    }
+
+    if (type === "feedback") {
+      return <FiCheckCircle />;
+    }
+
+    return <FiBell />;
   };
 
-  const getNotificationBackground = (type) => {
-    switch (type) {
-      case "connection":
-        return "bg-indigo-500/10";
+  /* =====================================================
+     ICON STYLE
+  ===================================================== */
 
-      case "alert":
-        return "bg-amber-500/10";
-
-      case "session":
-        return "bg-purple-500/10";
-
-      case "assignment":
-        return "bg-emerald-500/10";
-
-      case "feedback":
-        return "bg-blue-500/10";
-
-      case "document":
-        return "bg-teal-500/10";
-
-      default:
-        return "bg-slate-800/50";
+  const getNotificationIconClass = (type) => {
+    if (type === "important") {
+      return "bg-indigo-500/10 text-indigo-400";
     }
+
+    if (type === "warning") {
+      return "bg-red-500/10 text-red-400";
+    }
+
+    if (type === "assignment") {
+      return "bg-purple-500/10 text-purple-400";
+    }
+
+    if (type === "session") {
+      return "bg-emerald-500/10 text-emerald-400";
+    }
+
+    if (type === "feedback") {
+      return "bg-orange-500/10 text-orange-400";
+    }
+
+    return "bg-slate-800 text-slate-400";
   };
 
   return (
-    <div className="p-5 sm:p-6 lg:p-7">
+    <div className="min-h-full bg-[#080C14] p-6">
 
-      {/* =================================
+      {/* =====================================================
           PAGE HEADER
-      ================================= */}
+      ===================================================== */}
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="mb-6">
 
-        <div>
-
-          <div className="flex items-center gap-3">
-
-            <h1 className="text-2xl font-semibold text-white">
-              Notifications
-            </h1>
-
-            {unreadCount > 0 && (
-              <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-bold text-red-400">
-                {unreadCount} Unread
-              </span>
-            )}
-
-          </div>
-
-          <p className="mt-1 text-sm text-slate-400">
-            Stay updated with important coordinator activities
-          </p>
-
-        </div>
-
-        {unreadCount > 0 && (
-          <button
-            type="button"
-            onClick={markAllAsRead}
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-xs font-medium text-slate-300 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white"
-          >
-            <FiCheck />
-
-            Mark all as read
-          </button>
-        )}
-
-      </div>
-
-      {/* =================================
-          SUMMARY CARDS
-      ================================= */}
-
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-
-        {/* Total */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Total Notifications
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {notifications.length}
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
-              <FiBell />
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Unread */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Unread
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {unreadCount}
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
-              <FiAlertTriangle />
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Read */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Read
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {notifications.length -
-                  unreadCount}
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
-              <FiCheckCircle />
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* =================================
-          NOTIFICATION LIST
-      ================================= */}
-
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70">
-
-        {/* List Header */}
-
-        <div className="flex flex-col gap-4 border-b border-slate-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
           <div>
 
-            <h2 className="text-base font-semibold text-white">
-              Recent Notifications
-            </h2>
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs text-slate-500">
 
-            <p className="mt-1 text-xs text-slate-500">
-              Important updates from the mentoring system
+              <span>Coordinator</span>
+
+              <FiArrowRight size={13} />
+
+              <span className="text-slate-300">
+                Notifications
+              </span>
+
+            </div>
+
+            <div className="mt-3 flex items-center gap-3">
+
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                Notifications
+              </h1>
+
+              {unreadCount > 0 && (
+                <span className="rounded-full bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-400">
+                  {unreadCount} unread
+                </span>
+              )}
+
+            </div>
+
+            <p className="mt-1 text-sm text-slate-400">
+              Stay updated with mentoring activities, alerts and important notices.
             </p>
 
           </div>
 
-          {/* Filter */}
 
-          <div className="flex rounded-lg border border-slate-800 bg-slate-950/50 p-1">
-
+          {/* Mark all */}
+          {unreadCount > 0 && (
             <button
-              type="button"
-              onClick={() => setFilter("all")}
-              className={`rounded-md px-3 py-1.5 text-[11px] font-medium transition ${
-                filter === "all"
-                  ? "bg-indigo-500/15 text-indigo-400"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
+              onClick={markAllAsRead}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-[#0D1422] px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-indigo-500/30 hover:bg-indigo-500/10 hover:text-indigo-400"
             >
-              All
+              <FiCheckCircle size={16} />
+              Mark all as read
             </button>
+          )}
 
-            <button
-              type="button"
-              onClick={() => setFilter("unread")}
-              className={`rounded-md px-3 py-1.5 text-[11px] font-medium transition ${
-                filter === "unread"
-                  ? "bg-indigo-500/15 text-indigo-400"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              Unread
-            </button>
+        </div>
+
+      </section>
+
+
+      {/* =====================================================
+          SUMMARY
+      ===================================================== */}
+
+      <section>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+          <NotificationSummary
+            title="All Notifications"
+            value={notifications.length}
+            description="Total notifications"
+            icon={<FiBell />}
+            iconClass="bg-indigo-500/10 text-indigo-400"
+          />
+
+          <NotificationSummary
+            title="Unread"
+            value={unreadCount}
+            description="Require your attention"
+            icon={<FiAlertTriangle />}
+            iconClass="bg-red-500/10 text-red-400"
+          />
+
+          <NotificationSummary
+            title="Read"
+            value={readCount}
+            description="Already reviewed"
+            icon={<FiCheckCircle />}
+            iconClass="bg-emerald-500/10 text-emerald-400"
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* =====================================================
+          SEARCH + FILTER
+      ===================================================== */}
+
+      <section className="mt-6 rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+          {/* Search */}
+          <div className="relative w-full lg:max-w-xl">
+
+            <FiSearch
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            />
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search notifications..."
+              className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900/60 pl-11 pr-4 text-sm text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-indigo-500/50"
+            />
+
+          </div>
+
+
+          {/* Filters */}
+          <div className="flex rounded-xl border border-slate-800 bg-slate-900/40 p-1">
+
+            {["All", "Unread", "Read"].map((item) => (
+
+              <button
+                key={item}
+                onClick={() => setFilter(item)}
+                className={`rounded-lg px-4 py-2 text-xs font-medium transition ${
+                  filter === item
+                    ? "bg-indigo-500 text-white"
+                    : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {item}
+
+                {item === "Unread" && unreadCount > 0 && (
+                  <span className="ml-1.5">
+                    ({unreadCount})
+                  </span>
+                )}
+
+              </button>
+
+            ))}
 
           </div>
 
         </div>
 
-        {/* Notifications */}
+      </section>
 
+
+      {/* =====================================================
+          NOTIFICATION LIST
+      ===================================================== */}
+
+      <section className="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-[#0D1422]">
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 p-5">
+
+          <div>
+
+            <h2 className="font-semibold text-white">
+              Notification Center
+            </h2>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {filteredNotifications.length} notification
+              {filteredNotifications.length !== 1
+                ? "s"
+                : ""}{" "}
+              found
+            </p>
+
+          </div>
+
+          <FiBell className="text-indigo-400" />
+
+        </div>
+
+
+        {/* List */}
         {filteredNotifications.length > 0 ? (
 
           <div className="divide-y divide-slate-800">
 
-            {filteredNotifications.map(
-              (notification) => (
+            {filteredNotifications.map((notification) => (
 
-                <div
-                  key={notification.id}
-                  className={`group flex gap-4 p-5 transition hover:bg-slate-800/30 ${
-                    notification.unread
-                      ? "bg-indigo-500/[0.025]"
-                      : ""
-                  }`}
-                >
+              <div
+                key={notification.id}
+                className={`group p-5 transition hover:bg-slate-900/50 ${
+                  !notification.read
+                    ? "bg-indigo-500/[0.025]"
+                    : ""
+                }`}
+              >
+
+                <div className="flex items-start gap-4">
 
                   {/* Icon */}
-
                   <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getNotificationBackground(
+                    className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${getNotificationIconClass(
                       notification.type
                     )}`}
                   >
@@ -399,66 +512,120 @@ function Notifications() {
                     )}
                   </div>
 
-                  {/* Content */}
 
+                  {/* Content */}
                   <div className="min-w-0 flex-1">
 
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
 
-                      <div className="flex items-center gap-2">
+                      <div className="min-w-0">
 
-                        <h3 className="text-sm font-medium text-white">
-                          {notification.title}
-                        </h3>
+                        <div className="flex flex-wrap items-center gap-2">
 
-                        {notification.unread && (
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
-                        )}
+                          <h3
+                            className={`text-sm ${
+                              notification.read
+                                ? "font-medium text-slate-300"
+                                : "font-semibold text-white"
+                            }`}
+                          >
+                            {notification.title}
+                          </h3>
+
+                          {!notification.read && (
+                            <span className="h-2 w-2 rounded-full bg-indigo-400" />
+                          )}
+
+                        </div>
+
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+
+                          <span>
+                            {notification.sender}
+                          </span>
+
+                          <span>•</span>
+
+                          <span>
+                            {notification.time}
+                          </span>
+
+                        </div>
 
                       </div>
 
-                      <span className="shrink-0 text-[11px] text-slate-600">
-                        {notification.time}
+
+                      {/* Category */}
+                      <span
+                        className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium ${
+                          notification.type ===
+                          "important"
+                            ? "bg-indigo-500/10 text-indigo-400"
+                            : notification.type ===
+                              "warning"
+                            ? "bg-red-500/10 text-red-400"
+                            : notification.type ===
+                              "assignment"
+                            ? "bg-purple-500/10 text-purple-400"
+                            : notification.type ===
+                              "session"
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : "bg-slate-800 text-slate-400"
+                        }`}
+                      >
+                        {notification.category}
                       </span>
 
                     </div>
 
-                    <p className="mt-1 text-xs leading-5 text-slate-400">
+
+                    {/* Message */}
+                    <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-500">
                       {notification.message}
                     </p>
 
+
                     {/* Actions */}
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() =>
+                          openNotification(
+                            notification
+                          )
+                        }
+                        className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-2 text-xs font-medium text-slate-300 transition hover:border-indigo-500/30 hover:bg-indigo-500/10 hover:text-indigo-400"
+                      >
+                        <FiExternalLink size={13} />
+                        View
+                      </button>
 
-                      {notification.unread && (
+
+                      {!notification.read && (
                         <button
-                          type="button"
                           onClick={() =>
                             markAsRead(
                               notification.id
                             )
                           }
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 px-2.5 py-1.5 text-[10px] font-medium text-slate-400 transition hover:border-indigo-500/30 hover:bg-indigo-500/10 hover:text-indigo-400"
+                          className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/10"
                         >
-                          <FiCheck />
-
+                          <FiCheck size={13} />
                           Mark as read
                         </button>
                       )}
 
+
                       <button
-                        type="button"
                         onClick={() =>
-                          removeNotification(
+                          deleteNotification(
                             notification.id
                           )
                         }
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2.5 py-1.5 text-[10px] font-medium text-slate-600 transition hover:border-red-500/20 hover:bg-red-500/10 hover:text-red-400"
+                        className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-red-500/10 hover:text-red-400"
                       >
-                        <FiTrash2 />
-
-                        Remove
+                        <FiTrash2 size={13} />
+                        Delete
                       </button>
 
                     </div>
@@ -467,34 +634,212 @@ function Notifications() {
 
                 </div>
 
-              )
-            )}
+              </div>
+
+            ))}
 
           </div>
 
         ) : (
 
           /* Empty State */
+          <div className="px-6 py-16 text-center">
 
-          <div className="px-5 py-16 text-center">
-
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
-
-              <FiCheckCircle className="text-2xl" />
-
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-slate-600">
+              <FiBell size={22} />
             </div>
 
-            <h3 className="mt-4 text-sm font-medium text-white">
-              You're all caught up
+            <h3 className="mt-4 text-sm font-semibold text-white">
+              No notifications found
             </h3>
 
             <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
-              There are no notifications matching your current filter.
+              Try changing your search or filter to find another notification.
             </p>
 
           </div>
 
         )}
+
+      </section>
+
+
+      {/* =====================================================
+          NOTIFICATION DETAIL MODAL
+      ===================================================== */}
+
+      {selectedNotification && (
+
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+
+          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-800 bg-[#0D1422] shadow-2xl">
+
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 p-6">
+
+              <div className="flex items-center gap-4">
+
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${getNotificationIconClass(
+                    selectedNotification.type
+                  )}`}
+                >
+                  {getNotificationIcon(
+                    selectedNotification.type
+                  )}
+                </div>
+
+                <div>
+
+                  <p className="text-[11px] font-medium text-indigo-400">
+                    {selectedNotification.category}
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-semibold text-white">
+                    Notification Details
+                  </h2>
+
+                </div>
+
+              </div>
+
+
+              <button
+                onClick={() =>
+                  setSelectedNotification(null)
+                }
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-white"
+              >
+                <FiX size={18} />
+              </button>
+
+            </div>
+
+
+            {/* Modal Body */}
+            <div className="space-y-5 p-6">
+
+              <div>
+
+                <h3 className="text-base font-semibold text-white">
+                  {selectedNotification.title}
+                </h3>
+
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+
+                  <span>
+                    {selectedNotification.sender}
+                  </span>
+
+                  <span>•</span>
+
+                  <span>
+                    {selectedNotification.date}
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              {/* Message */}
+              <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+
+                <p className="text-sm leading-7 text-slate-400">
+                  {selectedNotification.message}
+                </p>
+
+              </div>
+
+
+              {/* Time */}
+              <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
+                  <FiClock size={16} />
+                </div>
+
+                <div>
+
+                  <p className="text-[11px] text-slate-600">
+                    Received
+                  </p>
+
+                  <p className="mt-1 text-xs font-medium text-slate-300">
+                    {selectedNotification.time}
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              {/* Action */}
+              {selectedNotification.action && (
+                <button
+                  onClick={() => {
+                    setSelectedNotification(null);
+                    navigate(
+                      selectedNotification.actionPath
+                    );
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
+                >
+                  {selectedNotification.action}
+                  <FiArrowRight size={16} />
+                </button>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   SUMMARY CARD
+========================================================= */
+
+function NotificationSummary({
+  title,
+  value,
+  description,
+  icon,
+  iconClass,
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+
+      <div className="flex items-start justify-between">
+
+        <div>
+
+          <p className="text-xs text-slate-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-2xl font-bold text-white">
+            {value}
+          </p>
+
+          <p className="mt-1 text-[11px] text-slate-500">
+            {description}
+          </p>
+
+        </div>
+
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconClass}`}
+        >
+          {icon}
+        </div>
 
       </div>
 

@@ -1,1057 +1,733 @@
 import { useMemo, useState } from "react";
 import {
   FiBarChart2,
-  FiUsers,
-  FiCalendar,
-  FiCheckCircle,
-  FiAlertTriangle,
-  FiStar,
-  FiSearch,
-  FiFilter,
   FiDownload,
-  FiEye,
-  FiX,
+  FiSearch,
+  FiUsers,
+  FiCheckCircle,
+  FiClock,
+  FiStar,
+  FiCalendar,
+  FiTrendingUp,
 } from "react-icons/fi";
-
-const reportData = [
-  {
-    id: 1,
-    mentor: "Dr. Rajesh R",
-    department: "Computer Science",
-    mentees: 8,
-    sessions: 14,
-    completed: 12,
-    compliance: 86,
-    rating: 4.7,
-    status: "Good",
-  },
-  {
-    id: 2,
-    mentor: "Dr. Anitha",
-    department: "Data Science",
-    mentees: 7,
-    sessions: 13,
-    completed: 11,
-    compliance: 85,
-    rating: 4.5,
-    status: "Good",
-  },
-  {
-    id: 3,
-    mentor: "Dr. Vivek",
-    department: "Computer Science",
-    mentees: 8,
-    sessions: 15,
-    completed: 10,
-    compliance: 67,
-    rating: 4.1,
-    status: "Attention",
-  },
-  {
-    id: 4,
-    mentor: "Dr. Ramesh",
-    department: "Information Technology",
-    mentees: 6,
-    sessions: 11,
-    completed: 10,
-    compliance: 91,
-    rating: 4.8,
-    status: "Good",
-  },
-  {
-    id: 5,
-    mentor: "Dr. Sunita",
-    department: "Data Science",
-    mentees: 5,
-    sessions: 9,
-    completed: 6,
-    compliance: 67,
-    rating: 3.9,
-    status: "Attention",
-  },
-];
-
-const sessionData = [
-  {
-    month: "May",
-    scheduled: 42,
-    completed: 38,
-  },
-  {
-    month: "June",
-    scheduled: 48,
-    completed: 43,
-  },
-  {
-    month: "July",
-    scheduled: 51,
-    completed: 45,
-  },
-  {
-    month: "August",
-    scheduled: 56,
-    completed: 49,
-  },
-];
 
 function Reports() {
   const [search, setSearch] = useState("");
-  const [departmentFilter, setDepartmentFilter] =
-    useState("All");
+  const [period, setPeriod] = useState("August 2025");
 
-  const [selectedReport, setSelectedReport] =
-    useState(null);
+  const mentors = [
+    {
+      id: 1,
+      name: "Dr. Ramesh Kumar",
+      department: "Data Science",
+      sessions: 24,
+      completed: 22,
+      attendance: 96,
+      feedback: 4.8,
+      feedbackPercent: 96,
+      mentees: 8,
+      pending: 2,
+    },
+    {
+      id: 2,
+      name: "Dr. Sunita Pillai",
+      department: "Data Science",
+      sessions: 18,
+      completed: 16,
+      attendance: 91,
+      feedback: 4.2,
+      feedbackPercent: 84,
+      mentees: 6,
+      pending: 2,
+    },
+    {
+      id: 3,
+      name: "Mr. Arun Joseph",
+      department: "Data Science",
+      sessions: 10,
+      completed: 7,
+      attendance: 78,
+      feedback: 3.1,
+      feedbackPercent: 62,
+      mentees: 5,
+      pending: 3,
+    },
+    {
+      id: 4,
+      name: "Dr. Meena S",
+      department: "Data Science",
+      sessions: 21,
+      completed: 19,
+      attendance: 94,
+      feedback: 4.6,
+      feedbackPercent: 92,
+      mentees: 7,
+      pending: 2,
+    },
+    {
+      id: 5,
+      name: "Dr. Anitha Joseph",
+      department: "Data Science",
+      sessions: 20,
+      completed: 18,
+      attendance: 89,
+      feedback: 4.4,
+      feedbackPercent: 88,
+      mentees: 7,
+      pending: 2,
+    },
+    {
+      id: 6,
+      name: "Dr. Arun Mathew",
+      department: "Data Science",
+      sessions: 16,
+      completed: 14,
+      attendance: 86,
+      feedback: 4.0,
+      feedbackPercent: 80,
+      mentees: 6,
+      pending: 2,
+    },
+  ];
 
-  const filteredReports = useMemo(() => {
-    return reportData.filter((item) => {
-      const searchMatch =
-        item.mentor
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        item.department
-          .toLowerCase()
-          .includes(search.toLowerCase());
+  const filteredMentors = useMemo(() => {
+    return mentors.filter((mentor) =>
+      mentor.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
 
-      const departmentMatch =
-        departmentFilter === "All" ||
-        item.department === departmentFilter;
-
-      return searchMatch && departmentMatch;
-    });
-  }, [search, departmentFilter]);
-
-  /* ================================
-     SUMMARY
-  ================================= */
-
-  const totalMentors = reportData.length;
-
-  const totalMentees = reportData.reduce(
-    (total, item) => total + item.mentees,
+  const totalSessions = mentors.reduce(
+    (sum, mentor) => sum + mentor.sessions,
     0
   );
 
-  const totalSessions = reportData.reduce(
-    (total, item) => total + item.sessions,
+  const completedSessions = mentors.reduce(
+    (sum, mentor) => sum + mentor.completed,
     0
   );
 
-  const completedSessions = reportData.reduce(
-    (total, item) => total + item.completed,
+  const totalMentees = mentors.reduce(
+    (sum, mentor) => sum + mentor.mentees,
     0
   );
 
-  const overallCompletion =
-    totalSessions > 0
-      ? Math.round(
-          (completedSessions / totalSessions) * 100
-        )
-      : 0;
+  const averageFeedback =
+    mentors.reduce((sum, mentor) => sum + mentor.feedback, 0) /
+    mentors.length;
 
-  const averageRating =
-    reportData.length > 0
-      ? (
-          reportData.reduce(
-            (total, item) => total + item.rating,
-            0
-          ) / reportData.length
-        ).toFixed(1)
-      : "0.0";
-
-  const attentionCount = reportData.filter(
-    (item) => item.status === "Attention"
-  ).length;
-
-  /* ================================
-     EXPORT
-  ================================= */
+  const completionRate = Math.round(
+    (completedSessions / totalSessions) * 100
+  );
 
   const handleExport = () => {
     const headers = [
       "Mentor",
       "Department",
-      "Mentees",
-      "Sessions",
+      "Total Sessions",
       "Completed",
-      "Compliance",
-      "Rating",
-      "Status",
+      "Attendance",
+      "Feedback",
+      "Mentees",
+      "Pending",
     ];
 
-    const rows = filteredReports.map((item) => [
-      item.mentor,
-      item.department,
-      item.mentees,
-      item.sessions,
-      item.completed,
-      `${item.compliance}%`,
-      item.rating,
-      item.status,
+    const rows = mentors.map((mentor) => [
+      mentor.name,
+      mentor.department,
+      mentor.sessions,
+      mentor.completed,
+      `${mentor.attendance}%`,
+      mentor.feedback,
+      mentor.mentees,
+      mentor.pending,
     ]);
 
-    const csv = [
+    const csvContent = [
       headers.join(","),
-      ...rows.map((row) =>
-        row.map((value) => `"${value}"`).join(",")
-      ),
+      ...rows.map((row) => row.join(",")),
     ].join("\n");
 
-    const blob = new Blob([csv], {
+    const blob = new Blob([csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "coordinator-report.csv";
+    link.download = `mentorone-report-${period.replace(" ", "-")}.csv`;
 
     document.body.appendChild(link);
     link.click();
-
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="p-5 sm:p-6 lg:p-7">
-
-      {/* =================================
-          HEADER
-      ================================= */}
-
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
+    <div className="min-h-full bg-[#080C14] p-6 text-white">
+      {/* HEADER */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <FiBarChart2 className="text-indigo-400 text-xl" />
+            </div>
 
-          <h1 className="text-2xl font-semibold text-white">
-            Reports
-          </h1>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                Department Reports
+              </h1>
 
-          <p className="mt-1 text-sm text-slate-400">
-            Monitor mentoring performance, sessions and compliance
-          </p>
-
+              <p className="text-sm text-slate-400 mt-1">
+                Data Science Department · {period}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleExport}
-          className="inline-flex w-fit items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2.5 text-xs font-medium text-white shadow-lg shadow-indigo-500/20 transition hover:from-indigo-400 hover:to-purple-500"
-        >
+        <div className="flex items-center gap-3">
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            className="h-10 px-3 rounded-lg bg-[#0D1422] border border-slate-700 text-sm text-slate-200 outline-none focus:border-indigo-500"
+          >
+            <option>August 2025</option>
+            <option>July 2025</option>
+            <option>June 2025</option>
+            <option>May 2025</option>
+          </select>
 
-          <FiDownload />
-
-          Export Report
-
-        </button>
-
+          <button
+            onClick={handleExport}
+            className="h-10 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition flex items-center gap-2 text-sm font-medium"
+          >
+            <FiDownload />
+            Export Report
+          </button>
+        </div>
       </div>
 
-      {/* =================================
-          SUMMARY CARDS
-      ================================= */}
+      {/* SUMMARY CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <SummaryCard
+          title="Total Sessions"
+          value={totalSessions}
+          subtitle="Scheduled this period"
+          icon={FiCalendar}
+          iconClass="text-indigo-400"
+          bgClass="bg-indigo-500/10"
+        />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <SummaryCard
+          title="Completed Sessions"
+          value={completedSessions}
+          subtitle={`${completionRate}% completion rate`}
+          icon={FiCheckCircle}
+          iconClass="text-emerald-400"
+          bgClass="bg-emerald-500/10"
+        />
 
-        {/* MENTORS */}
+        <SummaryCard
+          title="Total Mentees"
+          value={totalMentees}
+          subtitle="Across all mentors"
+          icon={FiUsers}
+          iconClass="text-purple-400"
+          bgClass="bg-purple-500/10"
+        />
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Total Mentors
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {totalMentors}
-              </p>
-
-              <p className="mt-1 text-[11px] text-slate-600">
-                Under coordination
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
-              <FiUsers />
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* MENTEES */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Total Mentees
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {totalMentees}
-              </p>
-
-              <p className="mt-1 text-[11px] text-slate-600">
-                Assigned students
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
-              <FiUsers />
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* SESSIONS */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Session Completion
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {overallCompletion}%
-              </p>
-
-              <p className="mt-1 text-[11px] text-emerald-400">
-                {completedSessions} of{" "}
-                {totalSessions} sessions
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
-              <FiCalendar />
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* RATING */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-xs font-medium text-slate-500">
-                Average Rating
-              </p>
-
-              <div className="mt-2 flex items-center gap-2">
-
-                <p className="text-2xl font-semibold text-white">
-                  {averageRating}
-                </p>
-
-                <FiStar className="fill-amber-400 text-amber-400" />
-
-              </div>
-
-              <p className="mt-1 text-[11px] text-amber-400">
-                Mentor feedback
-              </p>
-
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
-              <FiStar />
-            </div>
-
-          </div>
-
-        </div>
-
+        <SummaryCard
+          title="Average Feedback"
+          value={`${averageFeedback.toFixed(1)} / 5`}
+          subtitle="Overall mentor rating"
+          icon={FiStar}
+          iconClass="text-orange-400"
+          bgClass="bg-orange-500/10"
+        />
       </div>
 
-      {/* =================================
-          PERFORMANCE + ATTENTION
-      ================================= */}
-
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-
-        {/* SESSION TREND */}
-
-        <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/70">
-
-          <div className="border-b border-slate-800 px-5 py-4">
-
-            <h2 className="text-base font-semibold text-white">
-              Session Completion Trend
-            </h2>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Scheduled versus completed mentoring sessions
-            </p>
-
-          </div>
-
-          <div className="p-5">
-
-            <div className="space-y-5">
-
-              {sessionData.map((item) => {
-
-                const percentage =
-                  Math.round(
-                    (item.completed /
-                      item.scheduled) *
-                      100
-                  );
-
-                return (
-                  <div key={item.month}>
-
-                    <div className="mb-2 flex items-center justify-between">
-
-                      <span className="text-xs font-medium text-slate-400">
-                        {item.month}
-                      </span>
-
-                      <span className="text-xs text-slate-500">
-                        {item.completed} /{" "}
-                        {item.scheduled}
-                      </span>
-
-                    </div>
-
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all"
-                        style={{
-                          width: `${percentage}%`,
-                        }}
-                      />
-
-                    </div>
-
-                    <p className="mt-1 text-right text-[10px] text-slate-600">
-                      {percentage}% completed
-                    </p>
-
-                  </div>
-                );
-              })}
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ATTENTION */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70">
-
-          <div className="border-b border-slate-800 px-5 py-4">
-
-            <h2 className="text-base font-semibold text-white">
-              Needs Attention
-            </h2>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Mentors requiring coordinator review
-            </p>
-
-          </div>
-
-          <div className="p-5">
-
-            <div className="mb-5 flex items-center gap-3">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
-
-                <FiAlertTriangle />
-
-              </div>
-
-              <div>
-
-                <p className="text-2xl font-semibold text-white">
-                  {attentionCount}
-                </p>
-
-                <p className="text-xs text-slate-500">
-                  Mentors need attention
-                </p>
-
-              </div>
-
-            </div>
-
-            <div className="space-y-3">
-
-              {reportData
-                .filter(
-                  (item) =>
-                    item.status === "Attention"
-                )
-                .map((item) => (
-
-                  <div
-                    key={item.id}
-                    className="rounded-xl border border-amber-500/10 bg-amber-500/5 p-3"
-                  >
-
-                    <div className="flex items-center justify-between">
-
-                      <div>
-
-                        <p className="text-xs font-medium text-white">
-                          {item.mentor}
-                        </p>
-
-                        <p className="mt-1 text-[10px] text-slate-500">
-                          {item.compliance}%
-                          compliance
-                        </p>
-
-                      </div>
-
-                      <FiAlertTriangle className="text-amber-400" />
-
-                    </div>
-
-                  </div>
-
-                ))}
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* =================================
-          MENTOR PERFORMANCE TABLE
-      ================================= */}
-
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70">
-
-        {/* HEADER */}
-
-        <div className="border-b border-slate-800 px-5 py-4">
-
-          <div className="flex flex-col gap-4">
-
+      {/* MAIN REPORT GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        {/* SESSIONS PER MENTOR */}
+        <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+          <div className="flex items-center justify-between mb-6">
             <div>
-
               <h2 className="text-base font-semibold text-white">
-                Mentor Performance
+                Sessions per Mentor
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Session activity during {period}
+              </p>
+            </div>
+
+            <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+              <FiBarChart2 className="text-indigo-400" />
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {mentors.map((mentor) => {
+              const percentage = Math.round(
+                (mentor.sessions / Math.max(...mentors.map((m) => m.sessions))) *
+                  100
+              );
+
+              return (
+                <div key={mentor.id}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-slate-300">
+                      {mentor.name}
+                    </span>
+
+                    <span className="text-sm font-semibold text-white">
+                      {mentor.sessions}
+                    </span>
+                  </div>
+
+                  <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-indigo-500 transition-all"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* FEEDBACK SCORES */}
+        <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-base font-semibold text-white">
+                Feedback Scores
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Mentor satisfaction ratings
+              </p>
+            </div>
+
+            <div className="w-9 h-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <FiStar className="text-orange-400" />
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {mentors.map((mentor) => (
+              <div key={mentor.id}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-slate-300">
+                    {mentor.name}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <FiStar className="text-orange-400 text-sm" />
+                    <span className="text-sm font-semibold text-white">
+                      {mentor.feedback}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-orange-400"
+                    style={{ width: `${mentor.feedbackPercent}%` }}
+                  />
+                </div>
+
+                <div className="flex justify-end mt-1">
+                  <span className="text-[11px] text-slate-500">
+                    {mentor.feedbackPercent}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* PERFORMANCE OVERVIEW */}
+      <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5 mb-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-base font-semibold text-white">
+              Department Performance
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Overall mentoring performance indicators
+            </p>
+          </div>
+
+          <FiTrendingUp className="text-emerald-400 text-xl" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <PerformanceBar
+            title="Session Completion"
+            value={completionRate}
+            icon={FiCheckCircle}
+          />
+
+          <PerformanceBar
+            title="Average Attendance"
+            value={Math.round(
+              mentors.reduce((sum, mentor) => sum + mentor.attendance, 0) /
+                mentors.length
+            )}
+            icon={FiUsers}
+          />
+
+          <PerformanceBar
+            title="Feedback Satisfaction"
+            value={Math.round(
+              (mentors.reduce(
+                (sum, mentor) => sum + mentor.feedbackPercent,
+                0
+              ) /
+                mentors.length)
+            )}
+            icon={FiStar}
+          />
+        </div>
+      </div>
+
+      {/* DETAILED TABLE */}
+      <div className="rounded-2xl border border-slate-800 bg-[#0D1422] overflow-hidden">
+        <div className="p-5 border-b border-slate-800">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-base font-semibold text-white">
+                Mentor Performance Details
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
-                Compare mentor workload, sessions, compliance and ratings
+              <p className="text-xs text-slate-500 mt-1">
+                Detailed report for each mentor
               </p>
-
             </div>
 
-            {/* SEARCH */}
+            <div className="w-full md:w-64 h-10 flex items-center gap-2 px-3 rounded-lg bg-slate-900/60 border border-slate-700/60">
+              <FiSearch className="text-slate-500" />
 
-            <div className="flex flex-col gap-3 md:flex-row">
-
-              <div className="relative flex-1">
-
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) =>
-                    setSearch(e.target.value)
-                  }
-                  placeholder="Search mentor or department..."
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950/50 py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-indigo-500"
-                />
-
-              </div>
-
-              <select
-                value={departmentFilter}
-                onChange={(e) =>
-                  setDepartmentFilter(
-                    e.target.value
-                  )
-                }
-                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-xs text-white outline-none focus:border-indigo-500"
-              >
-
-                <option value="All">
-                  All Departments
-                </option>
-
-                <option value="Computer Science">
-                  Computer Science
-                </option>
-
-                <option value="Data Science">
-                  Data Science
-                </option>
-
-                <option value="Information Technology">
-                  Information Technology
-                </option>
-
-              </select>
-
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search mentor..."
+                className="w-full bg-transparent outline-none text-sm text-slate-200 placeholder:text-slate-500"
+              />
             </div>
-
           </div>
-
         </div>
 
-        {/* TABLE */}
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-[850px]">
-
+        {/* DESKTOP TABLE */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full">
             <thead>
-
-              <tr className="border-b border-slate-800">
-
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+              <tr className="border-b border-slate-800 text-left">
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
                   Mentor
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-                  Mentees
-                </th>
-
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
                   Sessions
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-                  Compliance
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
+                  Completion
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-                  Rating
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
+                  Attendance
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-                  Status
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
+                  Feedback
                 </th>
 
-                <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-600">
-                  Action
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
+                  Mentees
                 </th>
 
+                <th className="px-5 py-4 text-xs font-medium text-slate-500">
+                  Pending
+                </th>
               </tr>
-
             </thead>
 
-            <tbody className="divide-y divide-slate-800">
+            <tbody>
+              {filteredMentors.map((mentor) => {
+                const mentorCompletion = Math.round(
+                  (mentor.completed / mentor.sessions) * 100
+                );
 
-              {filteredReports.map((item) => (
+                return (
+                  <tr
+                    key={mentor.id}
+                    className="border-b border-slate-800/70 hover:bg-slate-800/20 transition"
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xs font-semibold text-indigo-300">
+                          {mentor.name
+                            .replace("Dr. ", "")
+                            .replace("Mr. ", "")
+                            .split(" ")
+                            .map((word) => word[0])
+                            .slice(0, 2)
+                            .join("")}
+                        </div>
 
-                <tr
-                  key={item.id}
-                  className="transition hover:bg-slate-800/20"
-                >
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            {mentor.name}
+                          </p>
 
-                  {/* MENTOR */}
-
-                  <td className="px-5 py-4">
-
-                    <div className="flex items-center gap-3">
-
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-[10px] font-semibold text-white">
-
-                        {item.mentor
-                          .replace("Dr. ", "")
-                          .split(" ")
-                          .map(
-                            (word) =>
-                              word[0]
-                          )
-                          .join("")
-                          .slice(0, 2)}
-
+                          <p className="text-[11px] text-slate-500">
+                            {mentor.department}
+                          </p>
+                        </div>
                       </div>
+                    </td>
 
-                      <div>
+                    <td className="px-5 py-4 text-sm text-slate-300">
+                      {mentor.completed}/{mentor.sessions}
+                    </td>
 
-                        <p className="text-xs font-medium text-white">
-                          {item.mentor}
-                        </p>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full"
+                            style={{
+                              width: `${mentorCompletion}%`,
+                            }}
+                          />
+                        </div>
 
-                        <p className="mt-1 text-[10px] text-slate-600">
-                          {item.department}
-                        </p>
-
+                        <span className="text-xs text-slate-400">
+                          {mentorCompletion}%
+                        </span>
                       </div>
+                    </td>
 
+                    <td className="px-5 py-4">
+                      <span
+                        className={`text-xs font-medium ${
+                          mentor.attendance >= 90
+                            ? "text-emerald-400"
+                            : mentor.attendance >= 80
+                            ? "text-orange-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {mentor.attendance}%
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1">
+                        <FiStar className="text-orange-400 text-sm" />
+                        <span className="text-sm text-slate-300">
+                          {mentor.feedback}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-4 text-sm text-slate-300">
+                      {mentor.mentees}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      {mentor.pending > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-orange-500/10 text-orange-400 text-xs">
+                          <FiClock />
+                          {mentor.pending}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-emerald-400">
+                          Clear
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* MOBILE CARDS */}
+        <div className="lg:hidden divide-y divide-slate-800">
+          {filteredMentors.map((mentor) => {
+            const mentorCompletion = Math.round(
+              (mentor.completed / mentor.sessions) * 100
+            );
+
+            return (
+              <div key={mentor.id} className="p-5">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xs font-semibold text-indigo-300">
+                      {mentor.name
+                        .replace("Dr. ", "")
+                        .replace("Mr. ", "")
+                        .split(" ")
+                        .map((word) => word[0])
+                        .slice(0, 2)
+                        .join("")}
                     </div>
-
-                  </td>
-
-                  {/* MENTEES */}
-
-                  <td className="px-5 py-4">
-
-                    <span className="text-xs text-slate-300">
-                      {item.mentees}
-                    </span>
-
-                  </td>
-
-                  {/* SESSIONS */}
-
-                  <td className="px-5 py-4">
 
                     <div>
-
-                      <p className="text-xs text-slate-300">
-                        {item.completed} /{" "}
-                        {item.sessions}
+                      <p className="text-sm font-semibold text-white">
+                        {mentor.name}
                       </p>
 
-                      <p className="mt-1 text-[10px] text-slate-600">
-                        completed
+                      <p className="text-xs text-slate-500">
+                        {mentor.department}
                       </p>
-
                     </div>
-
-                  </td>
-
-                  {/* COMPLIANCE */}
-
-                  <td className="px-5 py-4">
-
-                    <div className="w-28">
-
-                      <div className="mb-1 flex items-center justify-between">
-
-                        <span
-                          className={`text-[10px] font-medium ${
-                            item.compliance >=
-                            80
-                              ? "text-emerald-400"
-                              : "text-amber-400"
-                          }`}
-                        >
-                          {item.compliance}%
-                        </span>
-
-                      </div>
-
-                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-
-                        <div
-                          className={`h-full rounded-full ${
-                            item.compliance >=
-                            80
-                              ? "bg-emerald-500"
-                              : "bg-amber-500"
-                          }`}
-                          style={{
-                            width: `${item.compliance}%`,
-                          }}
-                        />
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  {/* RATING */}
-
-                  <td className="px-5 py-4">
-
-                    <div className="flex items-center gap-1.5">
-
-                      <FiStar className="fill-amber-400 text-amber-400" />
-
-                      <span className="text-xs text-slate-300">
-                        {item.rating}
-                      </span>
-
-                    </div>
-
-                  </td>
-
-                  {/* STATUS */}
-
-                  <td className="px-5 py-4">
-
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
-                        item.status ===
-                        "Good"
-                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                          : "border-amber-500/20 bg-amber-500/10 text-amber-400"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-
-                  </td>
-
-                  {/* ACTION */}
-
-                  <td className="px-5 py-4 text-right">
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedReport(
-                          item
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 px-3 py-2 text-[10px] font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-                    >
-
-                      <FiEye />
-
-                      View
-
-                    </button>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-        {/* EMPTY */}
-
-        {filteredReports.length === 0 && (
-
-          <div className="px-5 py-14 text-center">
-
-            <FiBarChart2 className="mx-auto text-3xl text-slate-700" />
-
-            <p className="mt-3 text-sm text-slate-400">
-              No report data found
-            </p>
-
-            <p className="mt-1 text-xs text-slate-600">
-              Try changing your search or department filter.
-            </p>
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* =================================
-          DETAIL MODAL
-      ================================= */}
-
-      {selectedReport && (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0D1220] shadow-2xl">
-
-            {/* HEADER */}
-
-            <div className="flex items-start justify-between border-b border-slate-800 px-5 py-4">
-
-              <div>
-
-                <h2 className="text-base font-semibold text-white">
-                  Mentor Performance
-                </h2>
-
-                <p className="mt-1 text-xs text-slate-500">
-                  Detailed performance summary
-                </p>
-
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedReport(null)
-                }
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
-              >
-
-                <FiX />
-
-              </button>
-
-            </div>
-
-            {/* CONTENT */}
-
-            <div className="space-y-5 p-5">
-
-              {/* PROFILE */}
-
-              <div className="flex items-center gap-3">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-semibold text-white">
-
-                  {selectedReport.mentor
-                    .replace("Dr. ", "")
-                    .split(" ")
-                    .map(
-                      (word) =>
-                        word[0]
-                    )
-                    .join("")
-                    .slice(0, 2)}
-
-                </div>
-
-                <div>
-
-                  <p className="text-sm font-semibold text-white">
-                    {selectedReport.mentor}
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-500">
-                    {selectedReport.department}
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* STATS */}
-
-              <div className="grid grid-cols-2 gap-3">
-
-                <DetailStat
-                  label="Mentees"
-                  value={
-                    selectedReport.mentees
-                  }
-                />
-
-                <DetailStat
-                  label="Sessions"
-                  value={`${selectedReport.completed}/${selectedReport.sessions}`}
-                />
-
-                <DetailStat
-                  label="Compliance"
-                  value={`${selectedReport.compliance}%`}
-                />
-
-                <DetailStat
-                  label="Rating"
-                  value={`${selectedReport.rating}/5`}
-                />
-
-              </div>
-
-              {/* STATUS */}
-
-              <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-
-                <div className="flex items-center justify-between">
-
-                  <div>
-
-                    <p className="text-[11px] text-slate-600">
-                      Overall Status
-                    </p>
-
-                    <p
-                      className={`mt-1 text-sm font-medium ${
-                        selectedReport.status ===
-                        "Good"
-                          ? "text-emerald-400"
-                          : "text-amber-400"
-                      }`}
-                    >
-                      {selectedReport.status}
-                    </p>
-
                   </div>
 
-                  {selectedReport.status ===
-                  "Good" ? (
-                    <FiCheckCircle className="text-emerald-400" />
-                  ) : (
-                    <FiAlertTriangle className="text-amber-400" />
-                  )}
-
+                  <div className="flex items-center gap-1">
+                    <FiStar className="text-orange-400" />
+                    <span className="text-sm text-white">
+                      {mentor.feedback}
+                    </span>
+                  </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <MiniStat
+                    label="Sessions"
+                    value={`${mentor.completed}/${mentor.sessions}`}
+                  />
+
+                  <MiniStat
+                    label="Attendance"
+                    value={`${mentor.attendance}%`}
+                  />
+
+                  <MiniStat
+                    label="Mentees"
+                    value={mentor.mentees}
+                  />
+
+                  <MiniStat
+                    label="Pending"
+                    value={mentor.pending}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-slate-500">
+                      Completion
+                    </span>
+
+                    <span className="text-slate-300">
+                      {mentorCompletion}%
+                    </span>
+                  </div>
+
+                  <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-500"
+                      style={{
+                        width: `${mentorCompletion}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-
-              {/* CLOSE */}
-
-              <div className="flex justify-end border-t border-slate-800 pt-5">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedReport(null)
-                  }
-                  className="rounded-xl border border-slate-800 px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-                >
-                  Close
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
+            );
+          })}
         </div>
 
-      )}
+        {filteredMentors.length === 0 && (
+          <div className="py-12 text-center">
+            <FiSearch className="mx-auto text-3xl text-slate-600 mb-3" />
 
+            <p className="text-sm text-slate-400">
+              No mentors found
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-/* =================================
-   DETAIL STAT
-================================= */
-
-function DetailStat({ label, value }) {
+/* SUMMARY CARD */
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  iconClass,
+  bgClass,
+}) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
+    <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs text-slate-500">{title}</p>
 
-      <p className="text-[10px] text-slate-600">
-        {label}
-      </p>
+          <p className="text-2xl font-bold text-white mt-2">
+            {value}
+          </p>
 
-      <p className="mt-1 text-lg font-semibold text-white">
+          <p className="text-xs text-slate-500 mt-1">
+            {subtitle}
+          </p>
+        </div>
+
+        <div
+          className={`w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center`}
+        >
+          <Icon className={`${iconClass} text-lg`} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* PERFORMANCE BAR */
+function PerformanceBar({ title, value, icon: Icon }) {
+  return (
+    <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Icon className="text-slate-400" />
+          <span className="text-sm text-slate-300">
+            {title}
+          </span>
+        </div>
+
+        <span className="text-sm font-semibold text-white">
+          {value}%
+        </span>
+      </div>
+
+      <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-emerald-500"
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* MOBILE MINI STAT */
+function MiniStat({ label, value }) {
+  return (
+    <div className="rounded-lg bg-slate-900/50 border border-slate-800 p-3">
+      <p className="text-[11px] text-slate-500">{label}</p>
+      <p className="text-sm font-semibold text-slate-200 mt-1">
         {value}
       </p>
-
     </div>
   );
 }
