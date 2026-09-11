@@ -1,26 +1,39 @@
+import { useState } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 
 function CoordinatorLayout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="h-screen overflow-hidden bg-[#080C14] text-white flex">
+      
+      {/* MOBILE OVERLAY */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] lg:hidden"
+        />
+      )}
 
-      {/* Sidebar */}
-      <Sidebar />
+      {/* SIDEBAR */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      {/* Main Area */}
+      {/* MAIN AREA */}
       <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+        <Navbar
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
-        {/* Navbar */}
-        <Navbar />
-
-        {/* Page Content */}
-        <main className="flex-1 min-h-0 overflow-y-auto">
+        <main className="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
-
       </div>
-
     </div>
   );
 }

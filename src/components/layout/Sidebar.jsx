@@ -1,219 +1,321 @@
+import { useLocation, useNavigate } from "react-router-dom";
+
 import {
   FiGrid,
-  FiUsers,
-  FiBell,
   FiBookOpen,
+  FiRepeat,
+  FiBell,
+  FiVolume2,
+  FiEdit3,
   FiStar,
   FiBarChart2,
   FiCalendar,
-  FiFileText,
-  FiSettings,
-  FiChevronUp,
-  FiRepeat,
+  FiX,
+  FiLogOut,
 } from "react-icons/fi";
 
-import { useNavigate } from "react-router-dom";
-
-function Sidebar() {
+function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const overviewItems = [
-  {
-    label: "Dashboard",
-    icon: FiGrid,
-    path: "/coordinator",
-  },
-  {
-    label: "My Mentors",
-    icon: FiBookOpen,
-    path: "/coordinator/mentors",
-  },
-  {
-    label: "My Mentees",
-    icon: FiUsers,
-    path: "/coordinator/mentees",
-  },
-  {
-    label: "Assign Mentees",
-    icon: FiRepeat,
-    path: "/coordinator/assign-mentees",
-  },
-];
-
-  const activityItems = [
+  const items = [
+    {
+      label: "Dashboard",
+      icon: FiGrid,
+      path: "/coordinator",
+    },
+    {
+      label: "My Mentors",
+      icon: FiBookOpen,
+      path: "/coordinator/mentors",
+    },
+    {
+      label: "Assign Mentees",
+      icon: FiRepeat,
+      path: "/coordinator/assign-mentees",
+    },
     {
       label: "Notifications",
       icon: FiBell,
-      badge: 3,
+      path: "/coordinator/notifications",
+      badge: 4,
+    },
+    {
+      label: "HOD Notices",
+      icon: FiVolume2,
+      path: "/coordinator/hod-notices",
+      badge: 0,
     },
     {
       label: "Remarks",
-      icon: FiBookOpen,
+      icon: FiEdit3,
+      path: "/coordinator/remarks",
     },
     {
       label: "Feedback",
       icon: FiStar,
+      path: "/coordinator/feedback",
     },
     {
       label: "Reports",
       icon: FiBarChart2,
+      path: "/coordinator/reports",
     },
-  ];
-
-  const workspaceItems = [
     {
       label: "Calendar",
       icon: FiCalendar,
-    },
-    {
-      label: "Documents",
-      icon: FiFileText,
-    },
-    {
-      label: "Settings",
-      icon: FiSettings,
+      path: "/coordinator/calendar",
     },
   ];
 
-  const renderItems = (items) => {
-    return items.map((item) => {
-      const Icon = item.icon;
+  // =========================
+  // ACTIVE MENU
+  // =========================
+  const isActive = (path) => {
+    if (path === "/coordinator") {
+      return location.pathname === "/coordinator";
+    }
 
-      return (
-        <button
-  key={item.label}
-  onClick={() => item.path && navigate(item.path)}
-  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-    item.path &&
-    window.location.pathname === item.path
-      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20"
-      : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
-  }`}
->
-          <Icon className="text-[17px] flex-shrink-0" />
+    return (
+      location.pathname === path ||
+      location.pathname.startsWith(`${path}/`)
+    );
+  };
 
-          <span>{item.label}</span>
+  // =========================
+  // NAVIGATION
+  // =========================
+  const handleNavigate = (path) => {
+    navigate(path);
+    onClose?.();
+  };
 
-          {item.badge && (
-            <span className="ml-auto text-[10px] font-bold bg-red-500/15 text-red-400 px-1.5 py-0.5 rounded-full">
-              {item.badge}
-            </span>
-          )}
-        </button>
-      );
-    });
+  // =========================
+  // SIGN OUT
+  // =========================
+  const handleSignOut = () => {
+    // Clear saved login/session data
+    localStorage.removeItem("mentorOneUser");
+
+    // Return to login page
+    navigate("/login", { replace: true });
+
+    // Close mobile sidebar
+    onClose?.();
   };
 
   return (
-    <aside className="w-64 h-full min-h-0 flex-shrink-0 flex flex-col bg-[#0D1220] border-r border-slate-800/80 overflow-hidden">
+    <>
+      {/* =========================
+          MOBILE OVERLAY
+      ========================= */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      {/* University */}
-      <div className="h-16 flex-shrink-0 flex items-center gap-2.5 px-5 border-b border-slate-800/80">
-
-        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-          <span className="text-slate-900 font-bold text-xs">
-            CU
-          </span>
+      {/* =========================
+          SIDEBAR
+      ========================= */}
+      <aside
+        className={`
+          fixed lg:static
+          inset-y-0 left-0
+          z-50
+          w-[270px]
+          flex-shrink-0
+          bg-[#0D1220]
+          border-r border-slate-800/80
+          flex flex-col
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+        `}
+      >
+        {/* =========================
+            MOBILE CLOSE BUTTON
+        ========================= */}
+        <div className="lg:hidden absolute top-4 right-4 z-10">
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            aria-label="Close menu"
+          >
+            <FiX className="text-lg" />
+          </button>
         </div>
 
-        <div className="leading-tight">
-          <div className="text-[13px] font-bold tracking-wide text-white">
-            CHRIST
+        {/* =========================
+            UNIVERSITY
+        ========================= */}
+        <div className="h-[72px] min-h-[72px] px-5 flex items-center border-b border-slate-800/80">
+          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-[#0D1220] font-bold text-lg flex-shrink-0">
+            C
           </div>
 
-          <div className="text-[9px] text-slate-500 tracking-wide">
-            DEEMED TO BE UNIVERSITY
+          <div className="ml-3 min-w-0">
+            <p className="text-sm font-medium text-white truncate">
+              CHRIST University
+            </p>
+
+            <p className="text-[10px] text-slate-500 truncate">
+              Deemed to be University
+            </p>
           </div>
         </div>
 
-      </div>
-
-      {/* MentorOne Branding */}
-      <div className="px-5 py-4 flex-shrink-0 border-b border-slate-800/80">
-
-        <div className="flex items-center gap-2">
-
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <FiBookOpen className="text-white text-base" />
-          </div>
-
-          <span className="font-bold text-[17px] bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            MentorOne
-          </span>
-
-        </div>
-
-        <div className="text-[11px] text-slate-500 mt-0.5 ml-[42px]">
-          Mentoring Management System
-        </div>
-
-      </div>
-
-      {/* Navigation */}
-      <nav
-  className="
-    flex-1
-    min-h-0
-    overflow-hidden
-    px-3
-    py-3
-    space-y-0.5
-  "
->
-
-        {/* Overview */}
-        <div className="px-3 pb-1 text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
-          Overview
-        </div>
-
-        {renderItems(overviewItems)}
-
-        {/* Activity */}
-        <div className="px-3 pb-1 pt-3 text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
-          Activity
-        </div>
-
-        {renderItems(activityItems)}
-
-        {/* Workspace */}
-        <div className="px-3 pb-1 pt-3 text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
-          Workspace
-        </div>
-
-        {renderItems(workspaceItems)}
-
-      </nav>
-
-      {/* Coordinator Profile */}
-      <div className="p-3 flex-shrink-0 border-t border-slate-800/80">
-
-        <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-slate-800/60 transition">
-
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            MS
-          </div>
-
-          <div className="text-left leading-tight flex-1 min-w-0">
-
-            <div className="text-[13px] font-semibold text-white truncate">
-              Dr. Meena S
+        {/* =========================
+            BRAND
+        ========================= */}
+        <div className="px-5 pt-6 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 flex-shrink-0">
+              <span className="text-white text-xl">
+                👥
+              </span>
             </div>
 
-            <div className="text-[11px] text-slate-500 flex items-center gap-1">
-              Coordinator
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                MentorOne
+              </h2>
 
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+              <p className="text-[10px] tracking-wide text-slate-500">
+                MENTORING SYSTEM
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================
+            SECTION TITLE
+        ========================= */}
+        <div className="px-5 mb-2">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+            Coordinator
+          </p>
+        </div>
+
+        {/* =========================
+            NAVIGATION
+        ========================= */}
+        <nav className="px-3 flex-1 overflow-y-auto">
+          <div className="space-y-1">
+            {items.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleNavigate(item.path)}
+                  className={`
+                    w-full
+                    h-11
+                    px-3
+                    rounded-lg
+                    flex
+                    items-center
+                    gap-3
+                    text-sm
+                    transition-all
+                    duration-200
+                    ${
+                      active
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-purple-500/10"
+                        : "text-slate-400 hover:text-white hover:bg-slate-800/70"
+                    }
+                  `}
+                >
+                  <Icon className="text-lg flex-shrink-0" />
+
+                  <span className="flex-1 text-left truncate">
+                    {item.label}
+                  </span>
+
+                  {/* BADGE */}
+                  {typeof item.badge === "number" && (
+                    <span
+                      className={`
+                        min-w-5
+                        h-5
+                        px-1.5
+                        rounded-full
+                        flex
+                        items-center
+                        justify-center
+                        text-[9px]
+                        font-bold
+                        ${
+                          item.badge > 0
+                            ? "bg-red-500/20 text-red-400"
+                            : "bg-slate-700 text-slate-400"
+                        }
+                      `}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* =========================
+            USER + SIGN OUT
+        ========================= */}
+        <div className="border-t border-slate-800/80 p-4">
+          
+          {/* USER PROFILE */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xs font-semibold text-white flex-shrink-0">
+              MS
             </div>
 
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-white truncate">
+                Dr. Meena S
+              </p>
+
+              <p className="text-[11px] text-slate-500 truncate">
+                Coordinator
+              </p>
+            </div>
           </div>
 
-          <FiChevronUp className="text-slate-400 text-sm" />
+          {/* SIGN OUT */}
+          <button
+            onClick={handleSignOut}
+            className="
+              mt-3
+              w-full
+              h-11
+              px-3
+              rounded-lg
+              flex
+              items-center
+              gap-3
+              text-sm
+              font-medium
+              text-slate-400
+              transition-all
+              duration-200
+              hover:bg-red-500/10
+              hover:text-red-400
+            "
+          >
+            <FiLogOut className="text-lg flex-shrink-0" />
 
-        </button>
-
-      </div>
-
-    </aside>
+            <span>
+              Sign Out
+            </span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
 
