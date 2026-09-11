@@ -1,7 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+// =========================
+// Layouts
+// =========================
 import CoordinatorLayout from "./layouts/CoordinatorLayout";
+import MentorLayout from "./layouts/MentorLayout";
 
+// =========================
+// Coordinator Pages
+// =========================
 import Dashboard from "./pages/Coordinator/Dashboard";
 import MyMentors from "./pages/Coordinator/MyMentors";
 import MentorDetails from "./pages/Coordinator/MentorDetails";
@@ -16,104 +23,200 @@ import Calendar from "./pages/Coordinator/Calendar";
 import Documents from "./pages/Coordinator/Documents";
 import Settings from "./pages/Coordinator/Settings";
 
+// =========================
+// Login
+// =========================
+import Login from "./pages/Login";
+
+
 function App() {
   return (
     <BrowserRouter>
-      <CoordinatorLayout>
-        <Routes>
+      <Routes>
 
-          {/* Coordinator Dashboard */}
-          <Route
-            path="/coordinator"
-            element={<Dashboard />}
-          />
+        {/* ==================================================
+            LOGIN
+        ================================================== */}
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-          {/* My Mentors */}
-          <Route
-            path="/coordinator/mentors"
-            element={<MyMentors />}
-          />
+        {/* ==================================================
+            COORDINATOR
+        ================================================== */}
 
-          {/* Mentor Details */}
-          <Route
-            path="/coordinator/mentors/:mentorId"
-            element={<MentorDetails />}
-          />
+        <Route
+          path="/coordinator"
+          element={
+            <CoordinatorLayout>
+              <Dashboard />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* My Mentees */}
-          <Route
-            path="/coordinator/mentees"
-            element={<MyMentees />}
-          />
+        <Route
+          path="/coordinator/mentors"
+          element={
+            <CoordinatorLayout>
+              <MyMentors />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* Mentee Details */}
-          <Route
-            path="/coordinator/mentees/:menteeId"
-            element={<MenteeDetails />}
-          />
+        <Route
+          path="/coordinator/mentors/:mentorId"
+          element={
+            <CoordinatorLayout>
+              <MentorDetails />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* Assign Mentees */}
-          <Route
-            path="/coordinator/assign-mentees"
-            element={<AssignMentees />}
-          />
+        <Route
+          path="/coordinator/mentees"
+          element={
+            <CoordinatorLayout>
+              <MyMentees />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* Notifications */}
-          <Route
-            path="/coordinator/notifications"
-            element={<Notifications />}
-          />
+        <Route
+          path="/coordinator/mentees/:menteeId"
+          element={
+            <CoordinatorLayout>
+              <MenteeDetails />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* Remarks */}
-          <Route
-            path="/coordinator/remarks"
-            element={<Remarks />}
-          />
+        <Route
+          path="/coordinator/assign-mentees"
+          element={
+            <CoordinatorLayout>
+              <AssignMentees />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* Feedback */}
-          <Route
-            path="/coordinator/feedback"
-            element={<Feedback />}
-          />
+        <Route
+          path="/coordinator/notifications"
+          element={
+            <CoordinatorLayout>
+              <Notifications />
+            </CoordinatorLayout>
+          }
+        />
 
-          {/* Reports */}
-          <Route
-            path="/coordinator/reports"
-            element={<Reports />}
-          />
+        <Route
+          path="/coordinator/remarks"
+          element={
+            <CoordinatorLayout>
+              <Remarks />
+            </CoordinatorLayout>
+          }
+        />
+
+        <Route
+          path="/coordinator/feedback"
+          element={
+            <CoordinatorLayout>
+              <Feedback />
+            </CoordinatorLayout>
+          }
+        />
+
+        <Route
+          path="/coordinator/reports"
+          element={
+            <CoordinatorLayout>
+              <Reports />
+            </CoordinatorLayout>
+          }
+        />
+
+        <Route
+          path="/coordinator/calendar"
+          element={
+            <CoordinatorLayout>
+              <Calendar />
+            </CoordinatorLayout>
+          }
+        />
+
+        <Route
+          path="/coordinator/documents"
+          element={
+            <CoordinatorLayout>
+              <Documents />
+            </CoordinatorLayout>
+          }
+        />
+
+        <Route
+          path="/coordinator/settings"
+          element={
+            <CoordinatorLayout>
+              <Settings />
+            </CoordinatorLayout>
+          }
+        />
 
 
-          {/* Calendar */}
-          <Route
-            path="/coordinator/calendar"
-            element={<Calendar />}
-          />
+        {/* ==================================================
+            MENTOR
+        ================================================== */}
 
-          {/* Documents */}
-          <Route
-            path="/coordinator/documents"
-            element={<Documents />}
-          />
+        <Route
+          path="/mentor"
+          element={
+            <MentorLayout>
+              <div className="flex min-h-full items-center justify-center bg-[#080C14] p-6">
+                <div className="text-center">
+                  <h1 className="text-3xl font-bold text-white">
+                    Mentor Dashboard
+                  </h1>
 
-          {/* Settings */}
-          <Route
-            path="/coordinator/settings"
-            element={<Settings />}
-          />
-          
-          {/* Default */}
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to="/coordinator"
-                replace
-              />
-            }
-          />
+                  <p className="mt-2 text-slate-500">
+                    Mentor module is under development.
+                  </p>
+                </div>
+              </div>
+            </MentorLayout>
+          }
+        />
 
-        </Routes>
-      </CoordinatorLayout>
+
+        {/* ==================================================
+            DEFAULT
+        ================================================== */}
+
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to="/login"
+              replace
+            />
+          }
+        />
+
+        {/* ==================================================
+            UNKNOWN URL
+        ================================================== */}
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/login"
+              replace
+            />
+          }
+        />
+
+      </Routes>
     </BrowserRouter>
   );
 }
