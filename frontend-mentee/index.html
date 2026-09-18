@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MentorOne — Mentee</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════ LOGIN SCREEN ══════════════════════════ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">◆</div>
+      <div class="login-title">MentorOne — Mentee</div>
+      <div class="login-sub">Sign in to your mentee portal</div>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <div class="field">
+      <label class="label">Register Number</label>
+      <input class="input" id="login-regno" placeholder="e.g. 2548021"/>
+    </div>
+    <div class="field">
+      <label class="label">Password</label>
+      <input class="input" id="login-pass" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn btn-amber btn-block" id="login-btn" onclick="doLogin()">Sign in</button>
+    <p class="login-note">This portal is for mentees only. Your register number and password are provided by your department — there is no role selection here.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MENTEE APP ══════════════════════════ -->
+<div id="app-screen" class="app-shell hidden">
+  <div class="topbar">
+    <div class="topbar-title">Mentee Portal</div>
+    <div class="topbar-user">
+      <div class="av av-amber" id="topbar-av">JA</div>
+      <span id="topbar-name">Jasmine A — 2548021</span>
+      <button class="btn btn-ghost btn-xs" onclick="logout()" style="margin-left:10px">Log out</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="s-section">Mentee</div>
+      <div class="slink active" data-page="dashboard" onclick="showPage('dashboard')">🏠 Dashboard</div>
+      <div class="slink" data-page="discover" onclick="showPage('discover')">🔍 Find Mentor</div>
+      <div class="slink" data-page="book" onclick="showPage('book')">📅 Book Session</div>
+      <div class="slink" data-page="otp" onclick="showPage('otp')">🛡 OTP</div>
+      <div class="slink" data-page="notices" onclick="showPage('notices')">📣 HOD Notices<span class="pill-count hidden" id="notices-count">0</span></div>
+      <div class="slink" data-page="feedback" onclick="showPage('feedback')">⭐ Feedback</div>
+    </div>
+
+    <div class="main">
+
+      <!-- ---------------- Dashboard ---------------- -->
+      <div class="panel-page" id="page-dashboard">
+        <div class="page-title" id="dash-greeting">Good morning 👋</div>
+        <div class="page-sub" id="dash-sub">—</div>
+        <div class="stats stats-3">
+          <div class="stat"><div class="stat-label">Sessions this month</div><div class="stat-value" id="stat-month">—</div><div class="stat-note" style="color:var(--green)">✓ Monthly requirement met</div></div>
+          <div class="stat"><div class="stat-label">Total sessions</div><div class="stat-value" id="stat-total">—</div><div class="stat-note" style="color:var(--muted)">All time</div></div>
+          <div class="stat"><div class="stat-label">Attendance</div><div class="stat-value" id="stat-attendance">—</div><div class="prog-outer"><div class="prog-inner" id="stat-attendance-bar" style="width:0%;background:var(--green)"></div></div></div>
+        </div>
+        <div class="grid2">
+          <div>
+            <div class="card">
+              <div class="card-title">👤 My Mentor</div>
+              <div class="row-start" style="margin-bottom:14px">
+                <div class="av av-blue av-lg" id="mentor-avatar">--</div>
+                <div>
+                  <div style="font-size:15px;font-weight:600" id="mentor-name">—</div>
+                  <div style="font-size:12px;color:var(--muted)" id="mentor-role">—</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px" id="mentor-card-actions">
+                <button class="btn btn-blue" onclick="showPage('book')">📅 Book session</button>
+                <button class="btn" onclick="showPage('otp')">🛡 Enter OTP</button>
+              </div>
+              <div class="hidden" id="mentor-card-empty">
+                <button class="btn btn-amber" onclick="showPage('discover')">🔍 Find a mentor</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">📆 Upcoming Sessions</div>
+              <div id="dash-upcoming"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 My Sessions — Done vs Pending</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px" id="dash-donut-legend"></div>
+            <hr class="div"/>
+            <div class="card-title" style="margin-bottom:10px">🎓 My Academic Status</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div>
+                <div class="row" style="margin-bottom:3px"><span style="font-size:13px">Attendance</span><span style="font-weight:600;color:var(--green)" id="acad-att">—</span></div>
+                <div class="prog-outer"><div class="prog-inner" id="acad-att-bar" style="width:0%;background:var(--green)"></div></div>
+              </div>
+              <div>
+                <div class="row" style="margin-bottom:3px"><span style="font-size:13px">CGPA</span><span style="font-weight:600" id="acad-cgpa">—</span></div>
+                <div class="prog-outer"><div class="prog-inner" id="acad-cgpa-bar" style="width:0%;background:var(--blue)"></div></div>
+              </div>
+              <div class="row"><span style="font-size:13px">Active backlogs</span><span class="badge" id="acad-backlogs">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------- Find Mentor ---------------- -->
+      <div class="panel-page hidden" id="page-discover">
+        <div class="page-title">Find a Mentor</div>
+        <div class="page-sub" id="discover-sub">Browse faculty profiles — send a request to your preferred mentor</div>
+
+        <div class="card hidden" id="discover-assigned-card">
+          <div class="card-title">✅ Your Mentor</div>
+          <div style="display:flex;gap:14px;align-items:center">
+            <div class="av av-blue av-lg" id="discover-assigned-avatar">--</div>
+            <div>
+              <div style="font-size:15px;font-weight:600" id="discover-assigned-name">—</div>
+              <div style="font-size:12px;color:var(--muted)" id="discover-assigned-role">—</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-blue" onclick="showPage('book')">📅 Book a session</button>
+          </div>
+        </div>
+
+        <div id="discover-browse-section">
+          <div class="field"><input class="input" id="discover-search" placeholder="Search by name, department, or specialisation..." oninput="renderMentorList()"/></div>
+          <div id="mentor-list" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Book Session ---------------- -->
+      <div class="panel-page hidden" id="page-book">
+        <div class="page-title">Book a Session</div>
+        <div class="page-sub">With <span id="book-mentor-name" style="color:var(--text);font-weight:600">your mentor</span> · Green slots = both of you are free</div>
+
+        <div class="notice notice-amber hidden" id="book-no-mentor-notice">
+          You don't have a mentor assigned yet. <a href="#" onclick="showPage('discover');return false;" style="color:inherit;text-decoration:underline">Go to Find Mentor</a> to request one — once they accept, you can book sessions here.
+        </div>
+
+        <div id="book-page-body">
+        <!-- NEW: Book a brand-new session (previously missing) -->
+        <div class="card">
+          <div class="card-title">➕ Book a New Session</div>
+          <div id="new-session-banner"></div>
+          <div class="row" style="margin-bottom:14px">
+            <div class="row-start" style="gap:8px">
+              <input type="checkbox" id="new-afterclass-chk" onchange="toggleAfterClass('new')"/>
+              <label for="new-afterclass-chk" style="font-size:13px;font-weight:500;cursor:pointer">Request a session after class instead</label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Date</label>
+            <input class="input" type="date" id="new-date-picker" onchange="onNewDateChange()"/>
+          </div>
+          <div id="new-slot-section">
+            <div class="card-title" style="margin-bottom:10px;font-size:13px" id="new-slot-heading">📅 Free Slots</div>
+            <div class="slot-grid" id="new-slot-grid"></div>
+          </div>
+          <div class="field hidden" id="new-afterclass-section">
+            <div class="grid2">
+              <div class="field"><label class="label">Date</label><input class="input" type="date" id="new-afterclass-date"/></div>
+              <div class="field"><label class="label">Time after class</label><input class="input" type="time" id="new-afterclass-time" value="16:30"/></div>
+            </div>
+          </div>
+          <div class="field"><label class="label">Selected time</label><input class="input" id="new-slot-inp" readonly value="Click a green slot above" style="color:var(--muted)"/></div>
+          <div class="grid2">
+            <div class="field"><label class="label">Duration</label>
+              <select class="input" id="new-duration"><option>30 minutes</option><option>45 minutes</option><option>60 minutes</option></select>
+            </div>
+            <div class="field"><label class="label">Mode</label>
+              <select class="input" id="new-mode"><option>In-person</option><option>Online — Jitsi Meet</option></select>
+            </div>
+          </div>
+          <div class="field"><label class="label">Agenda</label><textarea class="input" id="new-agenda" rows="3" placeholder="What do you want to discuss?"></textarea></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-blue" onclick="submitNewSession()">📨 Send session request</button>
+          </div>
+        </div>
+
+        <!-- Reschedule an existing session -->
+        <div class="card">
+          <div class="card-title">🕐 Reschedule an Existing Session</div>
+          <div id="reschedule-existing-list"></div>
+        </div>
+
+        <!-- Reschedule flow (shown once a session is picked above) -->
+        <div class="card hidden" id="reschedule-card">
+          <div class="card-title" id="reschedule-title">🕐 Rescheduling</div>
+          <div class="notice notice-amber" id="reschedule-banner"></div>
+          <div class="row" style="margin-bottom:14px">
+            <div class="row-start" style="gap:8px">
+              <input type="checkbox" id="resched-afterclass-chk" onchange="toggleAfterClass('resched')"/>
+              <label for="resched-afterclass-chk" style="font-size:13px;font-weight:500;cursor:pointer">Request a session after class instead</label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Date</label>
+            <input class="input" type="date" id="resched-date-picker" onchange="onReschedDateChange()"/>
+          </div>
+          <div id="resched-slot-section">
+            <div class="slot-grid" id="resched-slot-grid"></div>
+          </div>
+          <div class="field hidden" id="resched-afterclass-section">
+            <div class="grid2">
+              <div class="field"><label class="label">Date</label><input class="input" type="date" id="resched-afterclass-date"/></div>
+              <div class="field"><label class="label">Time after class</label><input class="input" type="time" id="resched-afterclass-time" value="16:30"/></div>
+            </div>
+          </div>
+          <div class="field"><label class="label">Selected time</label><input class="input" id="resched-slot-inp" readonly value="Click a green slot above" style="color:var(--muted)"/></div>
+          <div class="field"><label class="label">Reason for reschedule (optional)</label><textarea class="input" id="resched-reason" rows="2" placeholder="Let your mentor know why..."></textarea></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-amber" onclick="submitReschedule()">✓ Confirm reschedule</button>
+            <button class="btn" onclick="cancelReschedule()">Cancel</button>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ---------------- OTP ---------------- -->
+      <div class="panel-page hidden" id="page-otp">
+        <div class="page-title">OTP</div>
+        <div class="page-sub">Enter the one-time code your mentor shares with you at the start of a session</div>
+        <div class="card">
+          <div class="field">
+            <label class="label">Which session is this for?</label>
+            <select class="input" id="otp-session-select"></select>
+          </div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Your mentor generates a 6-digit OTP on their end and reads it out to you in person — enter it below to confirm attendance.</div>
+          <div class="otp-boxes">
+            <input class="otp-box" maxlength="1" oninput="otpAutoAdvance(this)"/>
+            <input class="otp-box" maxlength="1" oninput="otpAutoAdvance(this)"/>
+            <input class="otp-box" maxlength="1" oninput="otpAutoAdvance(this)"/>
+            <input class="otp-box" maxlength="1" oninput="otpAutoAdvance(this)"/>
+            <input class="otp-box" maxlength="1" oninput="otpAutoAdvance(this)"/>
+            <input class="otp-box" maxlength="1" oninput="otpAutoAdvance(this)"/>
+          </div>
+          <button class="btn btn-amber" onclick="verifyOtp()">✓ Verify OTP</button>
+          <div id="otp-result" style="margin-top:14px"></div>
+          <div class="notice notice-blue" style="margin-top:16px">Demo backend note: this build has no separate Mentor app to generate a live OTP, so a sample code has been pre-seeded on the backend for the "Orientation & goal setting" session so you can test this flow end to end. See the README for the demo code.</div>
+        </div>
+      </div>
+
+      <!-- ---------------- HOD Notices ---------------- -->
+      <div class="panel-page hidden" id="page-notices">
+        <div class="page-title">HOD Notices</div>
+        <div class="page-sub">Official notices and targeted communications sent by the Head of Department to you or your mentoring group.</div>
+        <div id="notices-list"></div>
+      </div>
+
+      <!-- ---------------- Feedback ---------------- -->
+      <div class="panel-page hidden" id="page-feedback">
+        <div class="page-title">Give Feedback</div>
+        <div class="page-sub">Rate your mentor after each session</div>
+        <div class="card">
+          <div class="card-title">⭐ Feedback for <span id="fb-mentor-name">your mentor</span></div>
+          <div class="field">
+            <label class="label">Which session?</label>
+            <select class="input" id="fb-session-select"></select>
+          </div>
+          <hr class="div"/>
+          <div class="field">
+            <label class="label">Availability &amp; punctuality</label>
+            <div class="star-rate" data-key="availability" onclick="rateStars(event,this)"></div>
+          </div>
+          <div class="field">
+            <label class="label">Communication quality</label>
+            <div class="star-rate" data-key="communication" onclick="rateStars(event,this)"></div>
+          </div>
+          <div class="field">
+            <label class="label">Academic guidance</label>
+            <div class="star-rate" data-key="guidance" onclick="rateStars(event,this)"></div>
+          </div>
+          <div class="field">
+            <label class="label">Overall experience</label>
+            <div class="star-rate" data-key="overall" onclick="rateStars(event,this)"></div>
+          </div>
+          <div class="field">
+            <label class="label">Comments</label>
+            <textarea class="input" id="fb-comment" rows="3" placeholder="Share your experience..."></textarea>
+          </div>
+          <button class="btn btn-amber" onclick="submitFeedback()">📨 Submit feedback</button>
+          <div id="fb-note" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

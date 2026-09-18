@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MentorOne — HOD</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════ LOGIN SCREEN (dedicated — no role picker) ══════════════════════════ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">◆</div>
+      <div class="login-title">MentorOne — HOD</div>
+      <div class="login-sub">Sign in to your HOD portal</div>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <div class="field">
+      <label class="label">Employee ID</label>
+      <input class="input" id="login-empid" placeholder="e.g. EMP1001"/>
+    </div>
+    <div class="field">
+      <label class="label">Password</label>
+      <input class="input" id="login-pass" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn btn-teal btn-block" id="login-btn" onclick="doLogin()">Sign in</button>
+    <p class="login-note">This portal is for Heads of Department only. Your employee ID and password are provided by the institution — there is no role selection here.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════ HOD APP ══════════════════════════ -->
+<div id="app-screen" class="app-shell hidden">
+  <div class="topbar">
+    <div class="topbar-title">HOD Portal</div>
+    <div class="topbar-user">
+      <div class="av" id="topbar-av" style="background:rgba(20,184,166,0.15);color:var(--teal)">HM</div>
+      <span id="topbar-name">Dr. Helen Mathew</span>
+      <button class="btn btn-ghost btn-xs" onclick="logout()" style="margin-left:10px">Log out</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="s-section">Head of Department</div>
+      <div class="slink active" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</div>
+      <div class="slink" data-page="assigncoord" onclick="showPage('assigncoord')">🧭 Assign Coordinator &amp; Mentors</div>
+      <div class="slink" data-page="allocation" onclick="showPage('allocation')">🔀 Mentee Allocation</div>
+      <div class="slink" data-page="capacity" onclick="showPage('capacity')">📦 Mentor Capacity</div>
+      <div class="slink" data-page="compliance" onclick="showPage('compliance')">✅ Session Compliance</div>
+      <div class="slink" data-page="diaries" onclick="showPage('diaries')">📝 Mentoring Diaries</div>
+      <div class="slink" data-page="critical" onclick="showPage('critical')">⚠️ Critical Issues<span class="pill-count hidden" id="critical-count">0</span></div>
+      <div class="slink" data-page="notice" onclick="showPage('notice')">📣 Department Notice</div>
+      <div class="slink" data-page="peer" onclick="showPage('peer')">🤝 Peer Mentoring</div>
+    </div>
+
+    <div class="main">
+
+      <!-- ---------------- Dashboard ---------------- -->
+      <div class="panel-page" id="page-dashboard">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="dash-sub">—</div>
+        <div class="stats stats-3">
+          <div class="stat"><div class="stat-label">Department mentees</div><div class="stat-value" id="stat-mentees">—</div></div>
+          <div class="stat"><div class="stat-label">Mentors</div><div class="stat-value" id="stat-mentors">—</div></div>
+          <div class="stat"><div class="stat-label">Allocated students</div><div class="stat-value" id="stat-allocated">—</div></div>
+        </div>
+        <div class="notice notice-amber hidden" id="awaiting-alert"></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">📘 Mentoring Session Policy</div>
+            <div style="font-size:13px;color:#c3cbdb;line-height:1.8">
+              <div>Minimum: <b>1 session / month</b></div>
+              <div>Recommended: <b>Weekly</b></div>
+              <div>Group size: <b>6–7 mentees</b></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🔒 Record &amp; Confidentiality Status</div>
+            <div style="font-size:13px;color:#c3cbdb;line-height:1.8">
+              <div>Diaries: <span class="badge b-green">Up to date</span></div>
+              <div>Repository: <span class="badge b-green">Institutional platform</span></div>
+              <div>Confidentiality: <span class="badge b-amber">Need-to-know only</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------- Assign Coordinator & Mentors ---------------- -->
+      <div class="panel-page hidden" id="page-assigncoord">
+        <div class="page-title">Assign Coordinator &amp; Mentors</div>
+        <div class="page-sub">Select a department to see its faculty, then choose who coordinates it and who acts as a mentor.</div>
+        <div class="card">
+          <div class="field"><label class="label">Department</label><select class="input" id="ac-dept-select" onchange="onDeptChange()"></select></div>
+        </div>
+        <div class="card">
+          <div class="card-title">✅ Currently Assigned Coordinator</div>
+          <div id="ac-current"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🧭 Assign a Coordinator</div>
+          <div class="grid2">
+            <div class="field"><label class="label">Faculty member</label><select class="input" id="ac-faculty-select"></select></div>
+            <div class="field"><label class="label">Course level</label><select class="input" id="ac-course-select"><option value="UG">UG</option><option value="PG">PG</option></select></div>
+          </div>
+          <button class="btn btn-teal" onclick="assignCoordinator()">✓ Assign as Department Coordinator</button>
+          <div id="ac-result" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">👨‍🏫 Assign Mentors</div>
+          <div class="page-sub" style="margin-bottom:10px">Faculty must be made a mentor here before mentees can be paired with them, or before they can sign in to the Mentor app.</div>
+          <div id="mentor-assign-list"></div>
+          <div id="mentor-assign-result" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Mentee Allocation ---------------- -->
+      <div class="panel-page hidden" id="page-allocation">
+        <div class="page-title">Mentee Allocation</div>
+        <div class="page-sub">Click a mentor to see who they mentor. Unpair a mentee to send them back to the unassigned pool.</div>
+        <div id="allocation-list"></div>
+        <div class="card hidden" id="unassigned-card">
+          <div class="card-title">🕊 Currently Unassigned</div>
+          <div id="unassigned-list" style="font-size:13px;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Mentor Capacity ---------------- -->
+      <div class="panel-page hidden" id="page-capacity">
+        <div class="page-title">Mentor Capacity</div>
+        <div class="page-sub">20-mentee cap per mentor, department-wide</div>
+        <div class="card"><table id="capacity-table"></table></div>
+      </div>
+
+      <!-- ---------------- Session Compliance ---------------- -->
+      <div class="panel-page hidden" id="page-compliance">
+        <div class="page-title">Session Compliance</div>
+        <div class="stats stats-3">
+          <div class="stat"><div class="stat-label">Monthly minimum</div><div class="stat-value">1</div></div>
+          <div class="stat"><div class="stat-label">Recommended</div><div class="stat-value">Weekly</div></div>
+          <div class="stat"><div class="stat-label">Compliant pairs</div><div class="stat-value" id="compliance-pct">—</div></div>
+        </div>
+        <div class="card"><table id="compliance-table"></table></div>
+      </div>
+
+      <!-- ---------------- Mentoring Diaries ---------------- -->
+      <div class="panel-page hidden" id="page-diaries">
+        <div class="page-title">Mentoring Diaries</div>
+        <div class="page-sub">Read-only view of remarks logged for each pair, plus pairing oversight.</div>
+        <div class="card">
+          <div class="card-title">🔗 Mentor–Mentee Pairings</div>
+          <div id="diaries-pairings-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📖 Open a Diary</div>
+          <div class="grid2">
+            <div class="field"><label class="label">Mentor</label><select class="input" id="diary-mentor-select" onchange="onDiaryMentorChange()"></select></div>
+            <div class="field"><label class="label">Mentee</label><select class="input" id="diary-mentee-select" onchange="loadDiary()"></select></div>
+          </div>
+          <div id="diary-cells" style="margin-bottom:14px"></div>
+          <div class="card-title" style="font-size:13px">🎙 Transcript</div>
+          <div id="diary-transcript" style="font-size:13px;color:#c3cbdb;white-space:pre-wrap"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Critical Issues ---------------- -->
+      <div class="panel-page hidden" id="page-critical">
+        <div class="page-title">Critical Issues</div>
+        <div class="page-sub">Confidential escalations from mentors, beyond the mentor's normal scope.</div>
+        <div class="card">
+          <div class="card-title">🚩 Mentor Escalations</div>
+          <div id="critical-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📣 Notify</div>
+          <div class="page-sub" style="margin-bottom:10px">Choose exactly who should receive this notice, or notify everyone at once.</div>
+          <div class="field"><label class="recipient-option" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="notify-all" onchange="toggleNotifyAll()"/> Notify All (every mentor, mentee and coordinator)</label></div>
+          <div class="grid2" id="notify-target-grid">
+            <div class="field">
+              <label class="recipient-option" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="notify-mentor-toggle" onchange="toggleNotifyTarget('mentor')"/> Mentor</label>
+              <select class="input" id="notify-mentor-select" disabled></select>
+            </div>
+            <div class="field">
+              <label class="recipient-option" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="notify-mentee-toggle" onchange="toggleNotifyTarget('mentee')"/> Mentee</label>
+              <select class="input" id="notify-mentee-select" disabled></select>
+            </div>
+            <div class="field">
+              <label class="recipient-option" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="notify-coordinator-toggle" onchange="toggleNotifyTarget('coordinator')"/> Coordinator</label>
+              <select class="input" id="notify-coordinator-select" disabled></select>
+            </div>
+          </div>
+          <div class="field"><label class="label">Message</label><textarea class="input" id="notify-text" rows="4"></textarea></div>
+          <button class="btn btn-teal" onclick="sendTargetedNotice()">📨 Send notice</button>
+          <div id="notify-result" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Department Notice ---------------- -->
+      <div class="panel-page hidden" id="page-notice">
+        <div class="page-title">Department Notice</div>
+        <div class="page-sub">Broadcast a notice to every mentor, mentee and coordinator in the department.</div>
+        <div class="card">
+          <div class="field"><label class="label">Departmental notice</label><textarea class="input" id="dept-notice-text" rows="6">All mentors shall schedule mentoring sessions for the entire semester during regular instruction days. Sessions may be one-on-one or in groups, according to departmental policy. The minimum periodicity is one session per month; weekly mentoring is recommended.</textarea></div>
+          <button class="btn btn-teal" onclick="publishDeptNotice()">📢 Publish notice</button>
+          <div id="dept-notice-result" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Peer Mentoring ---------------- -->
+      <div class="panel-page hidden" id="page-peer">
+        <div class="page-title">Peer Mentoring</div>
+        <div class="stats stats-3">
+          <div class="stat"><div class="stat-label">Trained peer mentors</div><div class="stat-value" id="peer-mentors">—</div></div>
+          <div class="stat"><div class="stat-label">Peer mentor groups</div><div class="stat-value" id="peer-groups">—</div></div>
+          <div class="stat"><div class="stat-label">Training status</div><div class="stat-value" id="peer-pct">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🤝 Programme Principle</div>
+          <div id="peer-principle" style="font-size:13px;color:#c3cbdb;line-height:1.7"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

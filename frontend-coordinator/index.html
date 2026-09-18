@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MentorOne — Coordinator</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════ LOGIN SCREEN (dedicated — no role picker) ══════════════════════════ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">◆</div>
+      <div class="login-title">MentorOne — Coordinator</div>
+      <div class="login-sub">Sign in to your coordinator portal</div>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <div class="field">
+      <label class="label">Employee ID</label>
+      <input class="input" id="login-empid" placeholder="e.g. EMP2001"/>
+    </div>
+    <div class="field">
+      <label class="label">Password</label>
+      <input class="input" id="login-pass" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn btn-purple btn-block" id="login-btn" onclick="doLogin()">Sign in</button>
+    <p class="login-note">This portal is for department coordinators only. Your employee ID and password are provided by your department — there is no role selection here.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════ COORDINATOR APP ══════════════════════════ -->
+<div id="app-screen" class="app-shell hidden">
+  <div class="topbar">
+    <div class="topbar-title">Coordinator Portal</div>
+    <div class="topbar-user">
+      <div class="av av-purple" id="topbar-av" style="background:rgba(139,92,246,0.15);color:var(--purple)">MS</div>
+      <span id="topbar-name">Dr. Meena S</span>
+      <button class="btn btn-ghost btn-xs" onclick="logout()" style="margin-left:10px">Log out</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="s-section">Coordinator</div>
+      <div class="slink active" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</div>
+      <div class="slink" data-page="mentors" onclick="showPage('mentors')">👨‍🏫 My Mentors</div>
+      <div class="slink" data-page="assign" onclick="showPage('assign')">🔀 Assign Mentees</div>
+      <div class="slink" data-page="notifications" onclick="showPage('notifications')">🔔 Notifications<span class="pill-count hidden" id="notif-count">0</span></div>
+      <div class="slink" data-page="hodnotices" onclick="showPage('hodnotices')">📣 HOD Notices<span class="pill-count hidden" id="notices-count">0</span></div>
+      <div class="slink" data-page="remarks" onclick="showPage('remarks')">📝 Remarks</div>
+      <div class="slink" data-page="feedback" onclick="showPage('feedback')">⭐ Feedback</div>
+      <div class="slink" data-page="reports" onclick="showPage('reports')">📈 Reports</div>
+    </div>
+
+    <div class="main">
+
+      <!-- ---------------- Dashboard ---------------- -->
+      <div class="panel-page" id="page-dashboard">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="dash-sub">—</div>
+        <div class="stats stats-3">
+          <div class="stat"><div class="stat-label">Mentors under me</div><div class="stat-value" id="stat-mentors">—</div></div>
+          <div class="stat"><div class="stat-label">Total mentees</div><div class="stat-value" id="stat-mentees">—</div></div>
+          <div class="stat"><div class="stat-label">Sessions this month</div><div class="stat-value" id="stat-sessions">—</div></div>
+        </div>
+        <div class="notice notice-amber hidden" id="unmet-alert"></div>
+        <div class="card">
+          <div class="card-title">👨‍🏫 Mentor Overview</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px" id="mentor-overview-table"></table>
+        </div>
+      </div>
+
+      <!-- ---------------- My Mentors ---------------- -->
+      <div class="panel-page hidden" id="page-mentors">
+        <div class="page-title">My Mentors</div>
+        <div class="page-sub">Faculty in your department</div>
+        <div id="mentors-list" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+      <!-- ---------------- Assign Mentees ---------------- -->
+      <div class="panel-page hidden" id="page-assign">
+        <div class="page-title">Assign Mentees to Mentors</div>
+        <div class="row" style="margin-bottom:16px;gap:8px" id="assign-mode-tabs">
+          <button class="btn btn-purple btn-xs" data-mode="manual" onclick="setAssignMode('manual')">Manual assign</button>
+          <button class="btn btn-xs" data-mode="dynamic" onclick="setAssignMode('dynamic')">Dynamic change</button>
+          <button class="btn btn-xs" data-mode="connect" onclick="setAssignMode('connect')">Mentor ⇄ Mentee connect</button>
+        </div>
+
+        <!-- Manual -->
+        <div id="assign-manual">
+          <div class="card">
+            <div class="field"><input class="input" id="manual-search" placeholder="Search by name or programme..." oninput="renderManualList()"/></div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px" id="manual-table"></table>
+          </div>
+          <div class="card hidden" id="manual-pick-mentor-card">
+            <div class="card-title">Select a mentor for <span id="manual-pick-name"></span></div>
+            <div id="manual-mentor-options" style="display:flex;flex-direction:column;gap:8px"></div>
+            <button class="btn btn-xs" style="margin-top:10px" onclick="cancelManualPick()">Back to search</button>
+          </div>
+          <div id="manual-result"></div>
+        </div>
+
+        <!-- Dynamic -->
+        <div id="assign-dynamic" class="hidden">
+          <div class="card">
+            <div class="field">
+              <label class="label">Select a class</label>
+              <select class="input" id="dynamic-class-select" onchange="renderDynamicMentors()"></select>
+            </div>
+            <div class="field">
+              <label class="label">Mentors to split across</label>
+              <div id="dynamic-mentor-checklist" style="display:flex;flex-direction:column;gap:6px"></div>
+            </div>
+            <button class="btn btn-purple" onclick="dynamicSplit()">🔀 Divide class equally among selected mentors</button>
+            <div id="dynamic-result" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <!-- Connect -->
+        <div id="assign-connect" class="hidden">
+          <div class="card">
+            <div class="row">
+              <div>
+                <div class="card-title" style="margin-bottom:2px">Mentor ⇄ Mentee direct connect</div>
+                <div style="font-size:12px;color:var(--muted)">When on, mentors and mentees can browse each other and connect directly without waiting for you to assign them.</div>
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="connect-toggle" onchange="toggleConnectMode()"/>
+                <span id="connect-toggle-label" style="font-size:13px;font-weight:600">—</span>
+              </label>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📥 Open Requests</div>
+            <div id="open-requests-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------- Notifications ---------------- -->
+      <div class="panel-page hidden" id="page-notifications">
+        <div class="page-title">Notifications</div>
+        <div class="page-sub">Alerts about unmet pairs, at-risk mentees, and recent activity</div>
+        <div id="notifications-list"></div>
+      </div>
+
+      <!-- ---------------- HOD Notices ---------------- -->
+      <div class="panel-page hidden" id="page-hodnotices">
+        <div class="page-title">HOD Notices</div>
+        <div class="page-sub">Notices sent by the Head of Department addressed to coordinators.</div>
+        <div id="hodnotices-list"></div>
+      </div>
+
+      <!-- ---------------- Remarks (read-only) ---------------- -->
+      <div class="panel-page hidden" id="page-remarks">
+        <div class="page-title">Remarks</div>
+        <div class="page-sub">Read-only view of what a mentor has logged for a mentee</div>
+        <div class="card">
+          <div class="grid2">
+            <div class="field"><label class="label">Mentor</label><select class="input" id="remarks-mentor-select" onchange="renderRemarksMenteeOptions()"></select></div>
+            <div class="field"><label class="label">Mentee</label><select class="input" id="remarks-mentee-select" onchange="loadCoordRemarks()"></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📝 Question cells</div>
+          <div id="remarks-cells"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎙 Saved transcript</div>
+          <div id="remarks-transcript" style="font-size:13px;color:#c3cbdb;white-space:pre-wrap"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Feedback ---------------- -->
+      <div class="panel-page hidden" id="page-feedback">
+        <div class="page-title">Feedback</div>
+        <div class="page-sub">Per-mentor feedback summary, mentee feedback, and your own rating of each mentor</div>
+        <div id="feedback-mentor-cards"></div>
+      </div>
+
+      <!-- ---------------- Reports ---------------- -->
+      <div class="panel-page hidden" id="page-reports">
+        <div class="page-title">Reports</div>
+        <div class="card">
+          <div class="card-title">📊 Sessions Done vs Pending</div>
+          <div id="reports-donut"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">👨‍🏫 Sessions per Mentor</div>
+          <div id="reports-per-mentor"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">✅ Compliance Matrix</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px" id="compliance-table"></table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MentorOne — Mentor</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════ LOGIN SCREEN (dedicated — no role picker) ══════════════════════════ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">◆</div>
+      <div class="login-title">MentorOne — Mentor</div>
+      <div class="login-sub">Sign in to your mentor portal</div>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <div class="field">
+      <label class="label">Employee ID</label>
+      <input class="input" id="login-empid" placeholder="e.g. EMP2010"/>
+    </div>
+    <div class="field">
+      <label class="label">Password</label>
+      <input class="input" id="login-pass" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn btn-blue btn-block" id="login-btn" onclick="doLogin()">Sign in</button>
+    <p class="login-note">This portal is for mentors only. Your employee ID and password are provided by your department — there is no role selection here.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MENTOR APP ══════════════════════════ -->
+<div id="app-screen" class="app-shell hidden">
+  <div class="topbar">
+    <div class="topbar-title">Mentor Portal</div>
+    <div class="topbar-user">
+      <div class="av av-blue" id="topbar-av">RK</div>
+      <span id="topbar-name">Dr. Ramesh Kumar</span>
+      <button class="btn btn-ghost btn-xs" onclick="logout()" style="margin-left:10px">Log out</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="s-section">Mentor</div>
+      <div class="slink active" data-page="home" onclick="showPage('home')">🏠 Home</div>
+      <div class="slink" data-page="mentees" onclick="showPage('mentees')">👥 My Mentees</div>
+      <div class="slink" data-page="findmentees" onclick="showPage('findmentees')">🔍 Find Mentees</div>
+      <div class="slink" data-page="requests" onclick="showPage('requests')">📥 Session Requests<span class="pill-count hidden" id="requests-count">0</span></div>
+      <div class="slink" data-page="groupmeet" onclick="showPage('groupmeet')">👨‍👩‍👧 Group Meet</div>
+      <div class="slink" data-page="otp" onclick="showPage('otp')">🛡 OTP Attendance</div>
+      <div class="slink" data-page="remarks" onclick="showPage('remarks')">📝 Remarks</div>
+      <div class="slink" data-page="critical" onclick="showPage('critical')">⚠️ Report Critical Issue</div>
+      <div class="slink" data-page="notices" onclick="showPage('notices')">📣 HOD Notices<span class="pill-count hidden" id="notices-count">0</span></div>
+      <div class="slink" data-page="feedback" onclick="showPage('feedback')">⭐ Feedback</div>
+      <div class="slink" data-page="profile" onclick="showPage('profile')">👤 My Profile</div>
+    </div>
+
+    <div class="main">
+
+      <!-- ---------------- Home ---------------- -->
+      <div class="panel-page" id="page-home">
+        <div class="page-title">Welcome back</div>
+        <div class="page-sub" id="home-sub">—</div>
+        <div class="stats stats-3">
+          <div class="stat"><div class="stat-label">Active mentees</div><div class="stat-value" id="stat-mentees">— / 20</div></div>
+          <div class="stat"><div class="stat-label">Sessions this month</div><div class="stat-value" id="stat-sessions">—</div></div>
+          <div class="stat"><div class="stat-label">Pending requests</div><div class="stat-value" id="stat-pending">—</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📥 Pending Session Requests</div>
+          <div id="home-pending-sessions"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🙋 Mentee Requests (wanting you as mentor)</div>
+          <div id="home-mentee-requests"></div>
+          <div class="notice notice-blue" style="margin-top:12px;margin-bottom:0">Looking to take on more mentees yourself? Browse unassigned students on <a href="#" onclick="showPage('findmentees');return false;" style="color:inherit;text-decoration:underline">Find Mentees</a>.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎯 Mentee At-a-Glance</div>
+          <div id="home-mentee-glance"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- My Mentees ---------------- -->
+      <div class="panel-page hidden" id="page-mentees">
+        <div class="page-title">My Mentees</div>
+        <div class="page-sub">Everyone currently assigned to you</div>
+        <div id="mentees-list" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+      <!-- ---------------- Find Mentees ---------------- -->
+      <div class="panel-page hidden" id="page-findmentees">
+        <div class="page-title">Find Mentees</div>
+        <div class="page-sub">Unassigned students you could take on as mentees</div>
+        <div id="findmentees-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- ---------------- Session Requests ---------------- -->
+      <div class="panel-page hidden" id="page-requests">
+        <div class="page-title">Session Requests</div>
+        <div class="page-sub">Sessions awaiting your response, plus any you've proposed to a mentee</div>
+        <div class="card">
+          <div class="card-title">📥 Incoming Requests</div>
+          <div id="requests-pending-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📆 All Sessions</div>
+          <div id="requests-all-list"></div>
+        </div>
+
+        <!-- Reschedule flow -->
+        <div class="card hidden" id="mentor-reschedule-card">
+          <div class="card-title" id="mentor-reschedule-title">🕐 Rescheduling</div>
+          <div class="slot-grid" id="mreshed-slot-grid"></div>
+          <div class="field"><label class="label">Selected time</label><input class="input" id="mreshed-slot-inp" readonly value="Click a green slot above" style="color:var(--muted)"/></div>
+          <div class="field"><label class="label">Reason (optional)</label><textarea class="input" id="mreshed-reason" rows="2"></textarea></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-blue" onclick="submitMentorReschedule()">✓ Confirm reschedule</button>
+            <button class="btn" onclick="cancelMentorReschedule()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------- Group Meet ---------------- -->
+      <div class="panel-page hidden" id="page-groupmeet">
+        <div class="page-title">Group Meet</div>
+        <div class="page-sub">Schedule a mentoring session with several mentees at once</div>
+        <div class="card">
+          <div class="field">
+            <label class="label">Select mentees</label>
+            <div style="margin-bottom:8px"><label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="gm-select-all" onchange="gmToggleAll()"/> Select all</label> <span id="gm-count" style="font-size:12px;color:var(--muted);margin-left:8px">0 selected</span></div>
+            <div id="gm-mentee-checklist" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label class="label">Date</label><input class="input" type="date" id="gm-date"/></div>
+            <div class="field"><label class="label">Time</label><input class="input" type="time" id="gm-time" value="15:00"/></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label class="label">Mode</label><select class="input" id="gm-mode"><option>In-person — Seminar Hall</option><option>Online — Jitsi Meet</option></select></div>
+            <div class="field"><label class="label">Duration</label><select class="input" id="gm-duration"><option>30 minutes</option><option>45 minutes</option><option>60 minutes</option></select></div>
+          </div>
+          <div class="field"><label class="label">Agenda</label><textarea class="input" id="gm-agenda" rows="3"></textarea></div>
+          <button class="btn btn-blue" onclick="scheduleGroupMeet()">📨 Schedule group meet</button>
+          <div id="gm-result" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- OTP Attendance ---------------- -->
+      <div class="panel-page hidden" id="page-otp">
+        <div class="page-title">OTP Attendance</div>
+        <div class="page-sub">Generate a one-time code and read it aloud to confirm in-person attendance</div>
+        <div class="card">
+          <div class="field">
+            <label class="label">Which session?</label>
+            <select class="input" id="otp-session-select"></select>
+          </div>
+          <button class="btn btn-blue" onclick="generateOtp()">🔑 Request OTP</button>
+          <div id="otp-result" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Remarks ---------------- -->
+      <div class="panel-page hidden" id="page-remarks">
+        <div class="page-title">Remarks</div>
+        <div class="page-sub">Log session notes and observations for each mentee</div>
+        <div class="card">
+          <div class="field">
+            <label class="label">Mentee</label>
+            <select class="input" id="remarks-mentee-select" onchange="loadRemarksForMentee()"></select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎙 Conversation recording &amp; transcription</div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+            <button class="btn btn-red" id="record-btn" onclick="toggleRecording()">⏺ Start recording</button>
+            <span id="record-timer" style="font-size:13px;color:var(--muted)">00:00</span>
+          </div>
+          <textarea class="input" id="transcript-text" rows="4" placeholder="Transcript will appear here — you can also type/edit directly."></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-xs" onclick="clearTranscript()">Clear</button>
+            <button class="btn btn-xs btn-blue" onclick="saveTranscript()">Save transcript</button>
+          </div>
+          <div id="transcript-note" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🗒 Question cells</div>
+          <div id="remark-cells"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-xs" onclick="addRemarkCellUi()">➕ Add question cell</button>
+            <button class="btn btn-blue btn-xs" onclick="saveAllRemarks()">💾 Save remarks</button>
+          </div>
+          <div id="remarks-note" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Report Critical Issue ---------------- -->
+      <div class="panel-page hidden" id="page-critical">
+        <div class="page-title">Report Critical Issue</div>
+        <div class="notice notice-amber">Confidential — shared with the HOD on a need-to-know basis, for matters beyond normal mentoring scope.</div>
+        <div class="card">
+          <div class="field"><label class="label">Mentee</label><select class="input" id="ci-mentee-select"></select></div>
+          <div class="field"><label class="label">Issue category</label>
+            <select class="input" id="ci-category">
+              <option>Attendance shortage</option>
+              <option>Academic / personal concern</option>
+              <option>Ragging / harassment report</option>
+              <option>Other critical concern</option>
+            </select>
+          </div>
+          <div class="field"><label class="label">Details</label><textarea class="input" id="ci-details" rows="4"></textarea></div>
+          <button class="btn btn-red" onclick="submitCriticalIssue()">🚩 Submit confidential escalation</button>
+          <div id="ci-note" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📜 My submitted escalations</div>
+          <div id="ci-history"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- HOD Notices ---------------- -->
+      <div class="panel-page hidden" id="page-notices">
+        <div class="page-title">HOD Notices</div>
+        <div class="page-sub">Notices sent by the Head of Department addressed to mentors.</div>
+        <div id="notices-list"></div>
+      </div>
+
+      <!-- ---------------- Feedback ---------------- -->
+      <div class="panel-page hidden" id="page-feedback">
+        <div class="page-title">Feedback Received</div>
+        <div class="card">
+          <div class="card-title">⭐ Overall</div>
+          <div id="feedback-overall"></div>
+        </div>
+        <div class="card hidden" id="coord-feedback-card">
+          <div class="card-title">🗣 Coordinator's Feedback</div>
+          <div id="coord-feedback-body"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">👥 Mentee Feedback</div>
+          <div id="mentee-feedback-list"></div>
+        </div>
+      </div>
+
+      <!-- ---------------- Profile ---------------- -->
+      <div class="panel-page hidden" id="page-profile">
+        <div class="page-title">My Profile</div>
+        <div class="card">
+          <div class="grid2">
+            <div class="field"><label class="label">Full name</label><input class="input" id="pf-name"/></div>
+            <div class="field"><label class="label">Designation</label><input class="input" id="pf-designation"/></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label class="label">Department</label><input class="input" id="pf-department"/></div>
+            <div class="field"><label class="label">Qualification</label><input class="input" id="pf-qualification"/></div>
+          </div>
+          <div class="field"><label class="label">Keywords / Specialisation (comma separated)</label><input class="input" id="pf-tags"/></div>
+          <div class="grid2">
+            <div class="field"><label class="label">Teaching experience (years)</label><input class="input" type="number" id="pf-experience"/></div>
+            <div class="field"><label class="label">Papers published</label><input class="input" type="number" id="pf-papers"/></div>
+          </div>
+          <button class="btn btn-blue" onclick="saveProfile()">💾 Save profile</button>
+          <div id="pf-note" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
