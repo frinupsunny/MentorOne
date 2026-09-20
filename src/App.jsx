@@ -20,6 +20,7 @@ import Remarks from "./pages/Coordinator/Remarks";
 import Feedback from "./pages/Coordinator/Feedback";
 import Reports from "./pages/Coordinator/Reports";
 import Calendar from "./pages/Coordinator/Calendar";
+import HODNoticesCoordinator from "./pages/Coordinator/HODNotices";
 
 
 // =========================
@@ -159,7 +160,14 @@ function App() {
           }
         />
 
-
+        <Route
+          path="/coordinator/hod-notices"
+          element={
+            <CoordinatorLayout>
+              <HODNoticesCoordinator />
+            </CoordinatorLayout>
+          }
+        />
 
   {/* ==================================================
         MENTOR
