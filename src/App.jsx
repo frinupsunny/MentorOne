@@ -1,33 +1,40 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 // =========================
 // Layouts
 // =========================
 import CoordinatorLayout from "./layouts/CoordinatorLayout";
 import MentorLayout from "./layouts/MentorLayout";
+import HODLayout from "./layouts/HODLayout";
+
+// =========================
+// Login
+// =========================
+import Login from "./pages/Login";
 
 // =========================
 // Coordinator Pages
 // =========================
-import Dashboard from "./pages/Coordinator/Dashboard";
+import CoordinatorDashboard from "./pages/Coordinator/Dashboard";
 import MyMentors from "./pages/Coordinator/MyMentors";
 import MentorDetails from "./pages/Coordinator/MentorDetails";
-import MyMentees from "./pages/Coordinator/MyMentees";
+import CoordinatorMentees from "./pages/Coordinator/MyMentees";
 import MenteeDetails from "./pages/Coordinator/MenteeDetails";
 import AssignMentees from "./pages/Coordinator/AssignMentees";
 import Notifications from "./pages/Coordinator/Notifications";
-import Remarks from "./pages/Coordinator/Remarks";
-import Feedback from "./pages/Coordinator/Feedback";
-import Reports from "./pages/Coordinator/Reports";
+import CoordinatorRemarks from "./pages/Coordinator/Remarks";
+import CoordinatorFeedback from "./pages/Coordinator/Feedback";
+import CoordinatorReports from "./pages/Coordinator/Reports";
 import Calendar from "./pages/Coordinator/Calendar";
-import HODNoticesCoordinator from "./pages/Coordinator/HODNotices";
-
-
 
 // =========================
 // Mentor Pages
 // =========================
-
 import MentorDashboard from "./pages/Mentor/Dashboard";
 import MentorMentees from "./pages/Mentor/MyMentees";
 import MentorSessions from "./pages/Mentor/Sessions";
@@ -36,14 +43,21 @@ import FindMentorMentee from "./pages/Mentor/FindMentorMentee";
 import OTPVerification from "./pages/Mentor/OTPVerification";
 import MentorRemarks from "./pages/Mentor/MentorRemarks";
 import ReportIssue from "./pages/Mentor/ReportIssue";
-import HODNotices from "./pages/Mentor/HODNotices";
+import MentorHODNotices from "./pages/Mentor/HODNotices";
 import MentorFeedback from "./pages/Mentor/MentorFeedback";
 
 // =========================
-// Login
+// HOD Pages
 // =========================
-import Login from "./pages/Login";
-
+import HODDashboard from "./pages/hod/Dashboard";
+import AssignCoordinator from "./pages/hod/AssignCoordinator";
+import MenteeAllocation from "./pages/hod/MenteeAllocation";
+import MentorCapacity from "./pages/hod/MentorCapacity";
+import SessionCompliance from "./pages/hod/SessionCompliance";
+import MentoringDiaries from "./pages/hod/MentoringDiaries";
+import CriticalIssues from "./pages/hod/CriticalIssues";
+import DepartmentNotice from "./pages/hod/DepartmentNotice";
+import PeerMentoring from "./pages/hod/PeerMentoring";
 
 function App() {
   return (
@@ -66,7 +80,7 @@ function App() {
           path="/coordinator"
           element={
             <CoordinatorLayout>
-              <Dashboard />
+              <CoordinatorDashboard />
             </CoordinatorLayout>
           }
         />
@@ -93,7 +107,7 @@ function App() {
           path="/coordinator/mentees"
           element={
             <CoordinatorLayout>
-              <MyMentees />
+              <CoordinatorMentees />
             </CoordinatorLayout>
           }
         />
@@ -126,10 +140,19 @@ function App() {
         />
 
         <Route
+          path="/coordinator/hod-notices"
+          element={
+            <CoordinatorLayout>
+              <CoordinatorRemarks />
+            </CoordinatorLayout>
+          }
+        />
+
+        <Route
           path="/coordinator/remarks"
           element={
             <CoordinatorLayout>
-              <Remarks />
+              <CoordinatorRemarks />
             </CoordinatorLayout>
           }
         />
@@ -138,7 +161,7 @@ function App() {
           path="/coordinator/feedback"
           element={
             <CoordinatorLayout>
-              <Feedback />
+              <CoordinatorFeedback />
             </CoordinatorLayout>
           }
         />
@@ -147,7 +170,7 @@ function App() {
           path="/coordinator/reports"
           element={
             <CoordinatorLayout>
-              <Reports />
+              <CoordinatorReports />
             </CoordinatorLayout>
           }
         />
@@ -161,109 +184,184 @@ function App() {
           }
         />
 
+        {/* ==================================================
+            MENTOR
+        ================================================== */}
+
         <Route
-          path="/coordinator/hod-notices"
+          path="/mentor"
           element={
-            <CoordinatorLayout>
-              <HODNoticesCoordinator />
-            </CoordinatorLayout>
+            <MentorLayout>
+              <MentorDashboard />
+            </MentorLayout>
           }
         />
 
-  {/* ==================================================
-        MENTOR
-     ================================================== */}
+        <Route
+          path="/mentor/mentees"
+          element={
+            <MentorLayout>
+              <MentorMentees />
+            </MentorLayout>
+          }
+        />
 
         <Route
-  path="/mentor"
-  element={
-    <MentorLayout>
-      <MentorDashboard />
-    </MentorLayout>
-  }
-/>
+          path="/mentor/sessions"
+          element={
+            <MentorLayout>
+              <MentorSessions />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/mentees"
-  element={
-    <MentorLayout>
-      <MentorMentees />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/mentor/group-meetings"
+          element={
+            <MentorLayout>
+              <MentorGroupMeetings />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/sessions"
-  element={
-    <MentorLayout>
-      <MentorSessions />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/mentor/find-mentor"
+          element={
+            <MentorLayout>
+              <FindMentorMentee />
+            </MentorLayout>
+          }
+        />
 
+        <Route
+          path="/mentor/otp"
+          element={
+            <MentorLayout>
+              <OTPVerification />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/group-meetings"
-  element={
-    <MentorLayout>
-      <MentorGroupMeetings />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/mentor/remarks"
+          element={
+            <MentorLayout>
+              <MentorRemarks />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/find-mentor"
-  element={
-    <MentorLayout>
-      <FindMentorMentee />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/mentor/report-issue"
+          element={
+            <MentorLayout>
+              <ReportIssue />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/otp"
-  element={
-    <MentorLayout>
-      <OTPVerification />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/mentor/hod-notices"
+          element={
+            <MentorLayout>
+              <MentorHODNotices />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/remarks"
-  element={
-    <MentorLayout>
-      <MentorRemarks />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/mentor/feedback"
+          element={
+            <MentorLayout>
+              <MentorFeedback />
+            </MentorLayout>
+          }
+        />
 
-<Route
-  path="/mentor/report-issue"
-  element={
-    <MentorLayout>
-      <ReportIssue />
-    </MentorLayout>
-  }
-/>
+        {/* ==================================================
+            HOD
+        ================================================== */}
 
-<Route
-  path="/mentor/hod-notices"
-  element={
-    <MentorLayout>
-      <HODNotices />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/hod"
+          element={
+            <HODLayout>
+              <HODDashboard />
+            </HODLayout>
+          }
+        />
 
-<Route
-  path="/mentor/feedback"
-  element={
-    <MentorLayout>
-      <MentorFeedback />
-    </MentorLayout>
-  }
-/>
+        <Route
+          path="/hod/assign-coordinator"
+          element={
+            <HODLayout>
+              <AssignCoordinator />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/allocation"
+          element={
+            <HODLayout>
+              <MenteeAllocation />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/capacity"
+          element={
+            <HODLayout>
+              <MentorCapacity />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/sessions"
+          element={
+            <HODLayout>
+              <SessionCompliance />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/diaries"
+          element={
+            <HODLayout>
+              <MentoringDiaries />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/issues"
+          element={
+            <HODLayout>
+              <CriticalIssues />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/notices"
+          element={
+            <HODLayout>
+              <DepartmentNotice />
+            </HODLayout>
+          }
+        />
+
+        <Route
+          path="/hod/peer"
+          element={
+            <HODLayout>
+              <PeerMentoring />
+            </HODLayout>
+          }
+        />
 
         {/* ==================================================
             DEFAULT
