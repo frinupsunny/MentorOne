@@ -20,8 +20,6 @@ import Remarks from "./pages/Coordinator/Remarks";
 import Feedback from "./pages/Coordinator/Feedback";
 import Reports from "./pages/Coordinator/Reports";
 import Calendar from "./pages/Coordinator/Calendar";
-import Documents from "./pages/Coordinator/Documents";
-import Settings from "./pages/Coordinator/Settings";
 
 
 // =========================
@@ -161,23 +159,6 @@ function App() {
           }
         />
 
-        <Route
-          path="/coordinator/documents"
-          element={
-            <CoordinatorLayout>
-              <Documents />
-            </CoordinatorLayout>
-          }
-        />
-
-        <Route
-          path="/coordinator/settings"
-          element={
-            <CoordinatorLayout>
-              <Settings />
-            </CoordinatorLayout>
-          }
-        />
 
 
   {/* ==================================================
