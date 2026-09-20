@@ -1,22 +1,38 @@
-import { useLocation, useNavigate } from "react-router-dom";
 import {
   FiGrid,
-  FiBookOpen,
-  FiRepeat,
+  FiUsers,
   FiBell,
-  FiVolume2,
-  FiEdit3,
+  FiBookOpen,
   FiStar,
   FiBarChart2,
   FiCalendar,
-  FiX,
+  FiFileText,
+  FiSettings,
+  FiChevronUp,
+  FiRepeat,
+  FiLogOut,
 } from "react-icons/fi";
 
-function Sidebar({ isOpen, onClose }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+import { useNavigate } from "react-router-dom";
 
-  const items = [
+function Sidebar() {
+  const navigate = useNavigate();
+
+  // =========================
+  // Sign Out
+  // =========================
+  const handleSignOut = () => {
+    localStorage.removeItem("mentorOneToken");
+    localStorage.removeItem("mentorOneRole");
+    localStorage.removeItem("mentorOneUser");
+
+    navigate("/login", { replace: true });
+  };
+
+  // =========================
+  // Navigation Items
+  // =========================
+  const overviewItems = [
     {
       label: "Dashboard",
       icon: FiGrid,
@@ -28,25 +44,27 @@ function Sidebar({ isOpen, onClose }) {
       path: "/coordinator/mentors",
     },
     {
+      label: "My Mentees",
+      icon: FiUsers,
+      path: "/coordinator/mentees",
+    },
+    {
       label: "Assign Mentees",
       icon: FiRepeat,
       path: "/coordinator/assign-mentees",
     },
+  ];
+
+  const activityItems = [
     {
       label: "Notifications",
       icon: FiBell,
+      badge: 3,
       path: "/coordinator/notifications",
-      badge: 4,
-    },
-    {
-      label: "HOD Notices",
-      icon: FiVolume2,
-      path: "/coordinator/hod-notices",
-      badge: 0,
     },
     {
       label: "Remarks",
-      icon: FiEdit3,
+      icon: FiBookOpen,
       path: "/coordinator/remarks",
     },
     {
@@ -59,172 +77,187 @@ function Sidebar({ isOpen, onClose }) {
       icon: FiBarChart2,
       path: "/coordinator/reports",
     },
+  ];
+
+  const workspaceItems = [
     {
       label: "Calendar",
       icon: FiCalendar,
       path: "/coordinator/calendar",
     },
+    {
+      label: "Documents",
+      icon: FiFileText,
+      path: "/coordinator/documents",
+    },
+    {
+      label: "Settings",
+      icon: FiSettings,
+      path: "/coordinator/settings",
+    },
   ];
 
-  const isActive = (path) => {
-    if (path === "/coordinator") {
-      return location.pathname === "/coordinator";
-    }
+  // =========================
+  // Render Navigation Items
+  // =========================
+  const renderItems = (items) => {
+    return items.map((item) => {
+      const Icon = item.icon;
 
-    return (
-      location.pathname === path ||
-      location.pathname.startsWith(`${path}/`)
-    );
-  };
+      return (
+        <button
+          key={item.label}
+          onClick={() => item.path && navigate(item.path)}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            item.path && window.location.pathname === item.path
+              ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20"
+              : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+          }`}
+        >
+          <Icon className="text-[17px] flex-shrink-0" />
 
-  const handleNavigate = (path) => {
-    navigate(path);
-    onClose?.();
+          <span>{item.label}</span>
+
+          {item.badge && (
+            <span className="ml-auto text-[10px] font-bold bg-red-500/15 text-red-400 px-1.5 py-0.5 rounded-full">
+              {item.badge}
+            </span>
+          )}
+        </button>
+      );
+    });
   };
 
   return (
-    <aside
-      className={`
-        fixed lg:static
-        inset-y-0 left-0
-        z-50
-        w-[270px]
-        flex-shrink-0
-        bg-[#0D1220]
-        border-r border-slate-800/80
-        flex flex-col
-        transform transition-transform duration-300 ease-in-out
-        ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0
-      `}
-    >
-      {/* MOBILE CLOSE */}
-      <div className="lg:hidden absolute top-4 right-4 z-10">
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition"
-          aria-label="Close menu"
-        >
-          <FiX />
-        </button>
-      </div>
-
-      {/* UNIVERSITY */}
-      <div className="h-[72px] min-h-[72px] px-5 flex items-center border-b border-slate-800/80">
-        <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-[#0D1220] font-bold text-lg flex-shrink-0">
-          C
+    <aside className="w-64 h-full min-h-0 flex-shrink-0 flex flex-col bg-[#0D1220] border-r border-slate-800/80 overflow-hidden">
+      {/* =========================
+          University
+      ========================= */}
+      <div className="h-16 flex-shrink-0 flex items-center gap-2.5 px-5 border-b border-slate-800/80">
+        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+          <span className="text-slate-900 font-bold text-xs">
+            CU
+          </span>
         </div>
 
-        <div className="ml-3 min-w-0">
-          <p className="text-sm font-medium text-white truncate">
-            CHRIST University
-          </p>
-
-          <p className="text-[10px] text-slate-500 truncate">
-            Deemed to be University
-          </p>
-        </div>
-      </div>
-
-      {/* BRAND */}
-      <div className="px-5 pt-6 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 flex-shrink-0">
-            <span className="text-white text-xl">👥</span>
+        <div className="leading-tight">
+          <div className="text-[13px] font-bold tracking-wide text-white">
+            CHRIST
           </div>
 
-          <div>
-            <h2 className="text-xl font-bold text-white">
-              MentorOne
-            </h2>
-
-            <p className="text-[10px] tracking-wide text-slate-500">
-              MENTORING SYSTEM
-            </p>
+          <div className="text-[9px] text-slate-500 tracking-wide">
+            DEEMED TO BE UNIVERSITY
           </div>
         </div>
       </div>
 
-      {/* SECTION TITLE */}
-      <div className="px-5 mb-2">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
-          Coordinator
-        </p>
+      {/* =========================
+          MentorOne Branding
+      ========================= */}
+      <div className="px-5 py-4 flex-shrink-0 border-b border-slate-800/80">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <FiBookOpen className="text-white text-base" />
+          </div>
+
+          <span className="font-bold text-[17px] bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            MentorOne
+          </span>
+        </div>
+
+        <div className="text-[11px] text-slate-500 mt-0.5 ml-[42px]">
+          Mentoring Management System
+        </div>
       </div>
 
-      {/* NAVIGATION */}
-      <nav className="px-3 flex-1 overflow-y-auto">
-        <div className="space-y-1">
-          {items.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-
-            return (
-              <button
-                key={item.path}
-                onClick={() => handleNavigate(item.path)}
-                className={`
-                  w-full
-                  h-11
-                  px-3
-                  rounded-lg
-                  flex
-                  items-center
-                  gap-3
-                  text-sm
-                  transition
-                  ${
-                    active
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-purple-500/10"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/70"
-                  }
-                `}
-              >
-                <Icon className="text-lg flex-shrink-0" />
-
-                <span className="flex-1 text-left truncate">
-                  {item.label}
-                </span>
-
-                {typeof item.badge === "number" && (
-                  <span
-                    className={`
-                      min-w-5 h-5 px-1.5 rounded-full
-                      flex items-center justify-center
-                      text-[9px] font-bold
-                      ${
-                        item.badge > 0
-                          ? "bg-red-500/20 text-red-400"
-                          : "bg-slate-700 text-slate-400"
-                      }
-                    `}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+      {/* =========================
+          Navigation
+      ========================= */}
+      <nav
+        className="
+          flex-1
+          min-h-0
+          overflow-hidden
+          px-3
+          py-3
+          space-y-0.5
+        "
+      >
+        {/* Overview */}
+        <div className="px-3 pb-1 text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
+          Overview
         </div>
+
+        {renderItems(overviewItems)}
+
+        {/* Activity */}
+        <div className="px-3 pb-1 pt-3 text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
+          Activity
+        </div>
+
+        {renderItems(activityItems)}
+
+        {/* Workspace */}
+        <div className="px-3 pb-1 pt-3 text-[10px] font-semibold tracking-wider text-slate-600 uppercase">
+          Workspace
+        </div>
+
+        {renderItems(workspaceItems)}
       </nav>
 
-      {/* USER */}
-      <div className="border-t border-slate-800/80 p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xs font-semibold text-white flex-shrink-0">
+      {/* =========================
+          Coordinator Profile
+      ========================= */}
+      <div className="p-3 flex-shrink-0 border-t border-slate-800/80">
+        <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-slate-800/60 transition">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             MS
           </div>
 
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">
+          <div className="text-left leading-tight flex-1 min-w-0">
+            <div className="text-[13px] font-semibold text-white truncate">
               Dr. Meena S
-            </p>
+            </div>
 
-            <p className="text-[11px] text-slate-500">
+            <div className="text-[11px] text-slate-500 flex items-center gap-1">
               Coordinator
-            </p>
+
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+            </div>
           </div>
-        </div>
+
+          <FiChevronUp className="text-slate-400 text-sm" />
+        </button>
+
+        {/* =========================
+            Sign Out
+        ========================= */}
+        <button
+          onClick={handleSignOut}
+          className="
+            mt-2
+            flex
+            h-10
+            w-full
+            items-center
+            gap-3
+            rounded-lg
+            px-3
+            text-sm
+            font-medium
+            text-slate-400
+            transition-all
+            duration-200
+            hover:bg-red-500/10
+            hover:text-red-400
+          "
+        >
+          <FiLogOut className="flex-shrink-0 text-[17px]" />
+
+          <span>
+            Sign Out
+          </span>
+        </button>
       </div>
     </aside>
   );
