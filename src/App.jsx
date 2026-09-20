@@ -59,6 +59,18 @@ import CriticalIssues from "./pages/hod/CriticalIssues";
 import DepartmentNotice from "./pages/hod/DepartmentNotice";
 import PeerMentoring from "./pages/hod/PeerMentoring";
 
+
+// =========================
+// Mentee Pages
+// =========================
+
+import MenteeDashboard from "./pages/mentee/Dashboard";
+import MenteeSessions from "./pages/mentee/Sessions";
+import MenteeFindMentor from "./pages/mentee/FindMentorMentee";
+import MenteeOTPVerification from "./pages/mentee/OTPVerification";
+import MenteeHODNotices from "./pages/mentee/HODNotices";
+import MenteeFeedback from "./pages/mentee/MenteeFeedback";
+
 function App() {
   return (
     <BrowserRouter>
@@ -360,6 +372,52 @@ function App() {
             <HODLayout>
               <PeerMentoring />
             </HODLayout>
+          }
+        />
+
+        {/* ==================================================
+            MENTEE
+        ================================================== */}
+
+        <Route
+          path="/mentee"
+          element={
+            <MenteeDashboard />
+          }
+        />  
+
+        <Route
+          path="/mentee/sessions"
+          element={
+            <MenteeSessions />
+          }
+        />  
+
+        <Route
+          path="/mentee/find-mentor"
+          element={
+            <MenteeFindMentorMentee />
+          }
+        />  
+
+        <Route
+          path="/mentee/otp"
+          element={
+            <MenteeOTPVerification />
+          }
+        />
+
+        <Route
+          path="/mentee/hod-notices"
+          element={
+            <MenteeHODNotices />
+          }
+        />
+
+        <Route
+          path="/mentee/feedback"
+          element={
+            <MenteeFeedback />
           }
         />
 
