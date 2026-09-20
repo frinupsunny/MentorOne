@@ -1,72 +1,125 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_BASE_URL = "http://localhost:4000";
 
 function FindMentorMentee() {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("All");
   const [selectedPerson, setSelectedPerson] = useState(null);
 
-  const people = [
-    {
-      id: 1,
-      name: "Dr. Rahul Mathew",
-      role: "Mentor",
-      department: "Data Science",
-      designation: "Assistant Professor",
-      email: "rahul.mathew@christuniversity.in",
-      availability: "Available",
-      initials: "RM",
-    },
-    {
-      id: 2,
-      name: "Dr. Priya Thomas",
-      role: "Mentor",
-      department: "Computer Science",
-      designation: "Associate Professor",
-      email: "priya.thomas@christuniversity.in",
-      availability: "Available",
-      initials: "PT",
-    },
-    {
-      id: 3,
-      name: "Arjun Kumar",
-      role: "Mentee",
-      department: "Data Science",
-      designation: "MSc Data Science",
-      email: "arjun.kumar@christuniversity.in",
-      availability: "Assigned",
-      initials: "AK",
-    },
-    {
-      id: 4,
-      name: "Ananya Joseph",
-      role: "Mentee",
-      department: "Computer Applications",
-      designation: "BCA",
-      email: "ananya.joseph@christuniversity.in",
-      availability: "Available",
-      initials: "AJ",
-    },
-    {
-      id: 5,
-      name: "Dr. Sneha George",
-      role: "Mentor",
-      department: "Business Administration",
-      designation: "Assistant Professor",
-      email: "sneha.george@christuniversity.in",
-      availability: "Available",
-      initials: "SG",
-    },
-    {
-      id: 6,
-      name: "Rahul Sharma",
-      role: "Mentee",
-      department: "Data Science",
-      designation: "MSc Data Science",
-      email: "rahul.sharma@christuniversity.in",
-      availability: "Available",
-      initials: "RS",
-    },
-  ];
+  const [people, setPeople] = useState([]);
+  const [currentMentor, setCurrentMentor] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const getToken = () => {
+    return localStorage.getItem("mentorOneToken");
+  };
+
+  const getInitials = (name = "") => {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  const handleAuthError = (err) => {
+    if (
+      err.response?.status === 401 ||
+      err.response?.status === 403
+    ) {
+      localStorage.removeItem("mentorOneToken");
+      localStorage.removeItem("mentorOneRole");
+      localStorage.removeItem("mentorOneUser");
+
+      navigate("/login");
+      return true;
+    }
+
+    return false;
+  };
+
+  useEffect(() => {
+    const fetchFindData = async () => {
+      const token = getToken();
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const [menteesResponse, dashboardResponse] =
+          await Promise.all([
+            axios.get(
+              `${API_BASE_URL}/api/mentor/find-mentees`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+
+            axios.get(
+              `${API_BASE_URL}/api/mentor/dashboard`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+          ]);
+
+        const unassignedMentees = menteesResponse.data;
+
+        const mappedPeople = unassignedMentees.map((mentee) => ({
+          id: mentee.id,
+          name: mentee.name,
+          role: "Mentee",
+          department: "Not specified",
+          designation: mentee.programme,
+          email: "",
+          availability: "Available",
+          initials: getInitials(mentee.name),
+
+          // Keep backend information for the profile modal
+          registerNo: mentee.registerNo,
+          semester: mentee.semester,
+          section: mentee.section,
+          attendance: mentee.attendance,
+          cgpa: mentee.cgpa,
+          backlogs: mentee.backlogs,
+          backendStatus: mentee.status,
+        }));
+
+        setPeople(mappedPeople);
+        setCurrentMentor(dashboardResponse.data.mentor);
+      } catch (err) {
+        console.error("Find Mentor-Mentee API error:", err);
+
+        if (handleAuthError(err)) {
+          return;
+        }
+
+        setError(
+          err.response?.data?.error ||
+            "Unable to load available mentees."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFindData();
+  }, [navigate]);
 
   const filteredPeople = people.filter((person) => {
     const matchesSearch =
@@ -75,18 +128,54 @@ function FindMentorMentee() {
       person.designation.toLowerCase().includes(search.toLowerCase());
 
     const matchesDepartment =
-      department === "All" || person.department === department;
+      department === "All" ||
+      person.department === department;
 
     return matchesSearch && matchesDepartment;
   });
 
-  const mentorCount = people.filter(
-    (person) => person.role === "Mentor"
-  ).length;
+  const mentorCount = currentMentor ? 1 : 0;
+  const menteeCount = people.length;
+  const totalPeople = mentorCount + menteeCount;
 
-  const menteeCount = people.filter(
-    (person) => person.role === "Mentee"
-  ).length;
+  if (loading) {
+    return (
+      <div className="min-h-full bg-[#080C14] p-6 text-white">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-slate-700 border-t-purple-500" />
+
+            <p className="mt-4 text-sm text-slate-400">
+              Loading available mentees...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-full bg-[#080C14] p-6 text-white">
+        <div className="rounded-2xl border border-red-500/20 bg-[#101624] p-6">
+          <h2 className="text-lg font-semibold text-red-400">
+            Unable to load available mentees
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-400">
+            {error}
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#080C14] p-6 text-white">
@@ -101,7 +190,7 @@ function FindMentorMentee() {
         </h1>
 
         <p className="mt-2 text-sm text-slate-500">
-          Search and connect with mentors and mentees across departments.
+          Search and connect with currently unassigned mentees.
         </p>
       </div>
 
@@ -113,11 +202,11 @@ function FindMentorMentee() {
           </p>
 
           <h2 className="mt-2 text-3xl font-bold">
-            {people.length}
+            {totalPeople}
           </h2>
 
           <p className="mt-2 text-xs text-slate-500">
-            Available in directory
+            Available in this workspace
           </p>
         </div>
 
@@ -131,7 +220,7 @@ function FindMentorMentee() {
           </h2>
 
           <p className="mt-2 text-xs text-slate-500">
-            Faculty mentors
+            You
           </p>
         </div>
 
@@ -145,7 +234,7 @@ function FindMentorMentee() {
           </h2>
 
           <p className="mt-2 text-xs text-slate-500">
-            Student mentees
+            Currently unassigned
           </p>
         </div>
       </div>
@@ -154,7 +243,7 @@ function FindMentorMentee() {
       <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-[#27334A] bg-[#101624] p-5 md:flex-row">
         <input
           type="text"
-          placeholder="Search by name, department or designation..."
+          placeholder="Search by name, department or programme..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="flex-1 rounded-xl border border-[#33415C] bg-[#0B111D] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500"
@@ -166,14 +255,7 @@ function FindMentorMentee() {
           className="rounded-xl border border-[#33415C] bg-[#0B111D] px-4 py-3 text-sm text-slate-300 outline-none focus:border-blue-500"
         >
           <option value="All">All Departments</option>
-          <option value="Data Science">Data Science</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="Computer Applications">
-            Computer Applications
-          </option>
-          <option value="Business Administration">
-            Business Administration
-          </option>
+          <option value="Not specified">Not specified</option>
         </select>
       </div>
 
@@ -189,13 +271,7 @@ function FindMentorMentee() {
                 {person.initials}
               </div>
 
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  person.role === "Mentor"
-                    ? "bg-blue-500/10 text-blue-400"
-                    : "bg-emerald-500/10 text-emerald-400"
-                }`}
-              >
+              <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
                 {person.role}
               </span>
             </div>
@@ -232,12 +308,14 @@ function FindMentorMentee() {
                 View Profile
               </button>
 
-              <a
-                href={`mailto:${person.email}`}
-                className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
+              <button
+                type="button"
+                disabled
+                className="flex-1 cursor-not-allowed rounded-xl bg-slate-800 px-4 py-3 text-center text-sm font-semibold text-slate-500"
+                title="Email address is not available in the current backend data"
               >
                 Contact
-              </a>
+              </button>
             </div>
           </div>
         ))}
@@ -245,7 +323,7 @@ function FindMentorMentee() {
 
       {filteredPeople.length === 0 && (
         <div className="rounded-2xl border border-[#27334A] bg-[#101624] px-6 py-12 text-center text-sm text-slate-500">
-          No people found.
+          No unassigned mentees found.
         </div>
       )}
 
@@ -275,7 +353,17 @@ function FindMentorMentee() {
             <div className="mt-6 space-y-4 text-sm">
               <div>
                 <p className="text-slate-500">
-                  Designation
+                  Register Number
+                </p>
+
+                <p className="mt-1 text-slate-200">
+                  {selectedPerson.registerNo || "Not available"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">
+                  Programme
                 </p>
 
                 <p className="mt-1 text-slate-200">
@@ -285,46 +373,75 @@ function FindMentorMentee() {
 
               <div>
                 <p className="text-slate-500">
-                  Department
+                  Semester
                 </p>
 
                 <p className="mt-1 text-slate-200">
-                  {selectedPerson.department}
+                  {selectedPerson.semester}
                 </p>
               </div>
 
               <div>
                 <p className="text-slate-500">
-                  Email
+                  Section
                 </p>
 
-                <p className="mt-1 break-all text-slate-200">
-                  {selectedPerson.email}
+                <p className="mt-1 text-slate-200">
+                  {selectedPerson.section}
                 </p>
               </div>
 
               <div>
                 <p className="text-slate-500">
-                  Availability
+                  Attendance
                 </p>
 
-                <p className="mt-1 text-emerald-400">
-                  {selectedPerson.availability}
+                <p className="mt-1 text-blue-400">
+                  {selectedPerson.attendance}%
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">
+                  CGPA
+                </p>
+
+                <p className="mt-1 text-slate-200">
+                  {selectedPerson.cgpa}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">
+                  Backlogs
+                </p>
+
+                <p className="mt-1 text-slate-200">
+                  {selectedPerson.backlogs}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">
+                  Academic Status
+                </p>
+
+                <p
+                  className={`mt-1 ${
+                    selectedPerson.backendStatus === "At risk"
+                      ? "text-amber-400"
+                      : "text-emerald-400"
+                  }`}
+                >
+                  {selectedPerson.backendStatus}
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3">
-              <a
-                href={`mailto:${selectedPerson.email}`}
-                className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white"
-              >
-                Contact Person
-              </a>
-
+            <div className="mt-6">
               <button
                 onClick={() => setSelectedPerson(null)}
-                className="rounded-xl border border-[#33415C] px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                className="w-full rounded-xl border border-[#33415C] px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800"
               >
                 Close
               </button>

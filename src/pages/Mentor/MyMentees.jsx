@@ -1,52 +1,87 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_BASE_URL = "http://localhost:4000";
 
 function MyMentees() {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
   const [selectedMentee, setSelectedMentee] = useState(null);
 
-  const mentees = [
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      registerNo: "DS202401",
-      course: "MSc Data Science",
-      year: "1st Year",
-      email: "rahul.sharma@christuniversity.in",
-      progress: 85,
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Ananya Joseph",
-      registerNo: "BC202402",
-      course: "BCA",
-      year: "2nd Year",
-      email: "ananya.joseph@christuniversity.in",
-      progress: 70,
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Arjun Kumar",
-      registerNo: "MC202403",
-      course: "MCA",
-      year: "1st Year",
-      email: "arjun.kumar@christuniversity.in",
-      progress: 55,
-      status: "Needs Attention",
-    },
-    {
-      id: 4,
-      name: "Sneha Thomas",
-      registerNo: "DS202404",
-      course: "MSc Data Science",
-      year: "2nd Year",
-      email: "sneha.thomas@christuniversity.in",
-      progress: 92,
-      status: "Active",
-    },
-  ];
+  const [mentees, setMentees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchMentees = async () => {
+      const token = localStorage.getItem("mentorOneToken");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/api/mentor/mentees`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        /*
+          Backend fields:
+          programme  -> course
+          semester   -> year
+          attendance -> progress
+          Good standing -> Active
+          At risk      -> Needs Attention
+        */
+
+        const mappedMentees = response.data.map((mentee) => ({
+          ...mentee,
+          course: mentee.programme,
+          year: `Semester ${mentee.semester}`,
+          progress: mentee.attendance,
+          status:
+            mentee.status === "Good standing"
+              ? "Active"
+              : "Needs Attention",
+          email: mentee.email || "",
+        }));
+
+        setMentees(mappedMentees);
+      } catch (err) {
+        console.error("My Mentees API error:", err);
+
+        if (
+          err.response?.status === 401 ||
+          err.response?.status === 403
+        ) {
+          localStorage.removeItem("mentorOneToken");
+          localStorage.removeItem("mentorOneRole");
+          localStorage.removeItem("mentorOneUser");
+
+          navigate("/login");
+          return;
+        }
+
+        setError(
+          err.response?.data?.error ||
+            "Unable to load your mentees."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMentees();
+  }, [navigate]);
 
   const filteredMentees = mentees.filter((mentee) => {
     const matchesSearch =
@@ -60,11 +95,14 @@ function MyMentees() {
     return matchesSearch && matchesStatus;
   });
 
-  const getInitials = (name) => {
+  const getInitials = (name = "") => {
     return name
       .split(" ")
+      .filter(Boolean)
       .map((word) => word[0])
-      .join("");
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
   };
 
   const activeCount = mentees.filter(
@@ -74,6 +112,45 @@ function MyMentees() {
   const attentionCount = mentees.filter(
     (mentee) => mentee.status === "Needs Attention"
   ).length;
+
+  if (loading) {
+    return (
+      <div className="min-h-full bg-[#080C14] p-4 text-white sm:p-6 lg:p-8">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-slate-700 border-t-purple-500" />
+
+            <p className="mt-4 text-sm text-slate-400">
+              Loading your mentees...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-full bg-[#080C14] p-4 text-white sm:p-6 lg:p-8">
+        <div className="rounded-2xl border border-red-500/20 bg-[#101624] p-6">
+          <h2 className="text-lg font-semibold text-red-400">
+            Unable to load mentees
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-400">
+            {error}
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#080C14] p-4 text-white sm:p-6 lg:p-8">
@@ -378,7 +455,10 @@ function MyMentees() {
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
                           style={{
-                            width: `${mentee.progress}%`,
+                            width: `${Math.min(
+                              Math.max(mentee.progress || 0, 0),
+                              100
+                            )}%`,
                           }}
                         />
                       </div>
@@ -400,13 +480,19 @@ function MyMentees() {
 
                   {/* Contact */}
                   <td className="px-6 py-5">
-                    <a
-                      href={`mailto:${mentee.email}`}
-                      className="inline-flex items-center gap-2 text-sm font-medium text-blue-400 transition hover:text-blue-300"
-                    >
-                      Email
-                      <span>↗</span>
-                    </a>
+                    {mentee.email ? (
+                      <a
+                        href={`mailto:${mentee.email}`}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-400 transition hover:text-blue-300"
+                      >
+                        Email
+                        <span>↗</span>
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-600">
+                        Not available
+                      </span>
+                    )}
                   </td>
 
                   {/* Action */}
@@ -459,6 +545,7 @@ function MyMentees() {
       {selectedMentee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl border border-[#27334A] bg-[#101624] shadow-2xl">
+
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#27334A] px-6 py-5">
               <div>
@@ -510,25 +597,55 @@ function MyMentees() {
 
                 <div className="rounded-xl border border-[#27334A] bg-[#0B111D] p-4">
                   <p className="text-xs text-slate-500">
-                    Year
+                    Semester
                   </p>
 
                   <p className="mt-1 text-sm font-medium text-slate-200">
-                    {selectedMentee.year}
+                    {selectedMentee.semester}
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-[#27334A] bg-[#0B111D] p-4">
                   <p className="text-xs text-slate-500">
-                    Email
+                    Section
                   </p>
 
-                  <p className="mt-1 break-all text-sm font-medium text-blue-400">
-                    {selectedMentee.email}
+                  <p className="mt-1 text-sm font-medium text-slate-200">
+                    {selectedMentee.section}
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-[#27334A] bg-[#0B111D] p-4">
+                  <p className="text-xs text-slate-500">
+                    Attendance
+                  </p>
+
+                  <p className="mt-1 text-sm font-medium text-blue-400">
+                    {selectedMentee.attendance}%
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[#27334A] bg-[#0B111D] p-4">
+                  <p className="text-xs text-slate-500">
+                    CGPA
+                  </p>
+
+                  <p className="mt-1 text-sm font-medium text-slate-200">
+                    {selectedMentee.cgpa}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[#27334A] bg-[#0B111D] p-4">
+                  <p className="text-xs text-slate-500">
+                    Backlogs
+                  </p>
+
+                  <p className="mt-1 text-sm font-medium text-slate-200">
+                    {selectedMentee.backlogs}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-[#27334A] bg-[#0B111D] p-4 sm:col-span-2">
                   <p className="text-xs text-slate-500">
                     Status
                   </p>
@@ -561,18 +678,31 @@ function MyMentees() {
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
                     style={{
-                      width: `${selectedMentee.progress}%`,
+                      width: `${Math.min(
+                        Math.max(selectedMentee.progress || 0, 0),
+                        100
+                      )}%`,
                     }}
                   />
                 </div>
               </div>
 
-              <a
-                href={`mailto:${selectedMentee.email}`}
-                className="block w-full rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-500"
-              >
-                Contact Student
-              </a>
+              {selectedMentee.email ? (
+                <a
+                  href={`mailto:${selectedMentee.email}`}
+                  className="block w-full rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-500"
+                >
+                  Contact Student
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="block w-full cursor-not-allowed rounded-xl bg-slate-800 px-4 py-3 text-center text-sm font-semibold text-slate-500"
+                >
+                  Contact Information Unavailable
+                </button>
+              )}
             </div>
           </div>
         </div>

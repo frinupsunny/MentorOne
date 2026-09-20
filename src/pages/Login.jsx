@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   FiMail,
   FiLock,
@@ -11,6 +12,8 @@ import {
   FiUser,
   FiArrowRight,
 } from "react-icons/fi";
+
+const API_BASE_URL = "http://localhost:4000";
 
 function Login() {
   const navigate = useNavigate();
@@ -52,7 +55,7 @@ function Login() {
     },
   ];
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!selectedRole) {
@@ -61,25 +64,100 @@ function Login() {
     }
 
     if (!email || !password) {
-      alert("Please enter your email and password.");
+      alert("Please enter your login ID and password.");
       return;
     }
 
-    // Temporary demo navigation
-    if (selectedRole === "hod") {
-      navigate("/hod");
-    } else if (selectedRole === "coordinator") {
-      navigate("/coordinator");
-    } else if (selectedRole === "mentor") {
-      navigate("/mentor");
-    } else if (selectedRole === "mentee") {
-      navigate("/mentee");
+    try {
+      let endpoint = "";
+      let requestBody = {};
+
+      if (selectedRole === "mentor") {
+        endpoint = "/api/auth/mentor-login";
+
+        requestBody = {
+          employeeId: email.trim(),
+          password,
+        };
+      } else if (selectedRole === "mentee") {
+        endpoint = "/api/auth/mentee-login";
+
+        requestBody = {
+          registerNo: email.trim(),
+          password,
+        };
+      } else if (selectedRole === "coordinator") {
+        endpoint = "/api/auth/coordinator-login";
+
+        requestBody = {
+          employeeId: email.trim(),
+          password,
+        };
+      } else if (selectedRole === "hod") {
+        endpoint = "/api/auth/hod-login";
+
+        requestBody = {
+          employeeId: email.trim(),
+          password,
+        };
+      }
+
+      const response = await axios.post(
+        `${API_BASE_URL}${endpoint}`,
+        requestBody
+      );
+
+      const data = response.data;
+
+      // Save authentication token
+      localStorage.setItem("mentorOneToken", data.token);
+
+      // Save current role
+      localStorage.setItem("mentorOneRole", selectedRole);
+
+      // Save logged-in user information
+      if (selectedRole === "mentor") {
+        localStorage.setItem(
+          "mentorOneUser",
+          JSON.stringify(data.mentor)
+        );
+
+        navigate("/mentor");
+      } else if (selectedRole === "mentee") {
+        localStorage.setItem(
+          "mentorOneUser",
+          JSON.stringify(data.mentee)
+        );
+
+        navigate("/mentee");
+      } else if (selectedRole === "coordinator") {
+        localStorage.setItem(
+          "mentorOneUser",
+          JSON.stringify(data.coordinator)
+        );
+
+        navigate("/coordinator");
+      } else if (selectedRole === "hod") {
+        localStorage.setItem(
+          "mentorOneUser",
+          JSON.stringify(data.hod)
+        );
+
+        navigate("/hod");
+      }
+    } catch (error) {
+      const message =
+        error.response?.data?.error ||
+        "Unable to connect to the server. Please make sure the backend is running.";
+
+      alert(message);
     }
   };
 
+  const isMentee = selectedRole === "mentee";
+
   return (
     <div className="min-h-screen bg-[#080C14] text-white">
-
       <div className="grid min-h-screen lg:grid-cols-2">
 
         {/* =====================================================
@@ -111,7 +189,6 @@ function Login() {
 
             </div>
 
-
             {/* Main Content */}
             <div className="max-w-xl">
 
@@ -130,7 +207,6 @@ function Login() {
                 A centralized mentoring management platform for
                 HODs, coordinators, mentors and mentees.
               </p>
-
 
               {/* Feature Cards */}
               <div className="mt-8 grid grid-cols-2 gap-3">
@@ -163,16 +239,13 @@ function Login() {
 
             </div>
 
-
             {/* Footer */}
             <p className="text-xs text-slate-600">
               © 2026 MentorOne · CHRIST (Deemed to be University)
             </p>
 
           </div>
-
         </div>
-
 
         {/* =====================================================
             RIGHT SIDE - LOGIN
@@ -200,7 +273,6 @@ function Login() {
 
             </div>
 
-
             {/* Heading */}
             <div>
 
@@ -213,7 +285,6 @@ function Login() {
               </p>
 
             </div>
-
 
             {/* Login Card */}
             <form
@@ -233,9 +304,7 @@ function Login() {
                   {roles.map((role) => {
 
                     const Icon = role.icon;
-
-                    const active =
-                      selectedRole === role.id;
+                    const active = selectedRole === role.id;
 
                     return (
                       <button
@@ -277,12 +346,11 @@ function Login() {
 
               </div>
 
-
-              {/* Email */}
+              {/* Login ID */}
               <div className="mt-5">
 
                 <label className="text-sm font-medium text-slate-300">
-                  Email address
+                  {isMentee ? "Register number" : "Employee ID"}
                 </label>
 
                 <div className="mt-2 flex h-11 items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 px-3 focus-within:border-purple-500/50">
@@ -290,19 +358,22 @@ function Login() {
                   <FiMail className="flex-shrink-0 text-slate-500" />
 
                   <input
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) =>
                       setEmail(e.target.value)
                     }
-                    placeholder="Enter your email"
+                    placeholder={
+                      isMentee
+                        ? "Enter your register number"
+                        : "Enter your employee ID"
+                    }
                     className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
                   />
 
                 </div>
 
               </div>
-
 
               {/* Password */}
               <div className="mt-4">
@@ -354,7 +425,6 @@ function Login() {
 
               </div>
 
-
               {/* Login Button */}
               <button
                 type="submit"
@@ -364,13 +434,12 @@ function Login() {
                 <FiArrowRight />
               </button>
 
-
               {/* Demo note */}
               <div className="mt-5 rounded-lg border border-indigo-500/10 bg-indigo-500/5 p-3">
 
                 <p className="text-center text-[11px] leading-5 text-slate-500">
-                  Demo login — select a role and enter any
-                  email and password to continue.
+                  Demo login — use the credentials configured
+                  in the MentorOne backend.
                 </p>
 
               </div>
@@ -382,11 +451,9 @@ function Login() {
         </div>
 
       </div>
-
     </div>
   );
 }
-
 
 /* =========================================================
    FEATURE

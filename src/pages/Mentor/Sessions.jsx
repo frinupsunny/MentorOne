@@ -1,65 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_BASE_URL = "http://localhost:4000";
 
 function Sessions() {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
 
-  const [sessions, setSessions] = useState([
-    {
-      id: 1,
-      student: "Rahul Sharma",
-      course: "MSc Data Science",
-      date: "15 Sep 2026",
-      time: "10:30 AM",
-      type: "Academic Discussion",
-      status: "Upcoming",
-    },
-    {
-      id: 2,
-      student: "Ananya Joseph",
-      course: "BCA",
-      date: "16 Sep 2026",
-      time: "11:00 AM",
-      type: "Progress Review",
-      status: "Upcoming",
-    },
-    {
-      id: 3,
-      student: "Arjun Kumar",
-      course: "MCA",
-      date: "18 Sep 2026",
-      time: "02:00 PM",
-      type: "Career Guidance",
-      status: "Scheduled",
-    },
-    {
-      id: 4,
-      student: "Sneha Thomas",
-      course: "MSc Data Science",
-      date: "10 Sep 2026",
-      time: "03:30 PM",
-      type: "Academic Discussion",
-      status: "Completed",
-    },
-    {
-      id: 5,
-      student: "Vishal Raj",
-      course: "BBA",
-      date: "08 Sep 2026",
-      time: "12:00 PM",
-      type: "Personal Mentoring",
-      status: "Completed",
-    },
-    {
-      id: 6,
-      student: "Megha Paul",
-      course: "BCA",
-      date: "20 Sep 2026",
-      time: "01:00 PM",
-      type: "Progress Review",
-      status: "Cancelled",
-    },
-  ]);
+  const [sessions, setSessions] = useState([]);
+  const [mentees, setMentees] = useState([]);
 
   const [selectedSession, setSelectedSession] = useState(null);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
@@ -70,75 +22,344 @@ function Sessions() {
     date: "",
     time: "",
     type: "Academic Discussion",
-    status: "Upcoming",
   });
 
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+
+  const getToken = () => {
+    return localStorage.getItem("mentorOneToken");
+  };
+
+  const handleAuthError = (err) => {
+    if (
+      err.response?.status === 401 ||
+      err.response?.status === 403
+    ) {
+      localStorage.removeItem("mentorOneToken");
+      localStorage.removeItem("mentorOneRole");
+      localStorage.removeItem("mentorOneUser");
+
+      navigate("/login");
+      return true;
+    }
+
+    return false;
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (time) => {
+    if (!time) return "";
+
+    return new Date(`1970-01-01T${time}`).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getInitials = (name = "") => {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  const getDisplayStatus = (status) => {
+    switch (status) {
+      case "confirmed":
+        return "Scheduled";
+
+      case "pending":
+        return "Upcoming";
+
+      case "completed":
+        return "Completed";
+
+      case "declined":
+        return "Cancelled";
+
+      default:
+        return status;
+    }
+  };
+
+  const getStatusClass = (status) => {
+    const displayStatus = getDisplayStatus(status);
+
+    switch (displayStatus) {
+      case "Completed":
+        return "bg-emerald-500/10 text-emerald-400";
+
+      case "Cancelled":
+        return "bg-red-500/10 text-red-400";
+
+      case "Scheduled":
+        return "bg-purple-500/10 text-purple-400";
+
+      default:
+        return "bg-blue-500/10 text-blue-400";
+    }
+  };
+
+  const getSessionType = (session) => {
+    if (session.type) return session.type;
+
+    const title = (session.title || "").toLowerCase();
+
+    if (title.includes("career")) {
+      return "Career Guidance";
+    }
+
+    if (
+      title.includes("progress") ||
+      title.includes("academic")
+    ) {
+      return "Academic Discussion";
+    }
+
+    if (title.includes("personal")) {
+      return "Personal Mentoring";
+    }
+
+    return "Progress Review";
+  };
+
+  const loadSessions = async () => {
+    const token = getToken();
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/mentor/sessions`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSessions(response.data);
+    } catch (err) {
+      console.error("Sessions API error:", err);
+
+      if (handleAuthError(err)) {
+        return;
+      }
+
+      setError(
+        err.response?.data?.error ||
+          "Unable to load mentoring sessions."
+      );
+    }
+  };
+
+  const loadMentees = async () => {
+    const token = getToken();
+
+    if (!token) return;
+
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/mentor/mentees`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setMentees(response.data);
+    } catch (err) {
+      console.error("Mentees API error:", err);
+
+      if (handleAuthError(err)) {
+        return;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError("");
+
+      await Promise.all([
+        loadSessions(),
+        loadMentees(),
+      ]);
+
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
   const filteredSessions = sessions.filter((session) => {
+    const displayStatus = getDisplayStatus(session.status);
+    const sessionType = getSessionType(session);
+
+    const studentName = (
+      session.menteeName || ""
+    ).toLowerCase();
+
+    const menteeCourse =
+      mentees.find(
+        (mentee) => mentee.id === session.menteeId
+      )?.programme || "";
+
     const matchesSearch =
-      session.student.toLowerCase().includes(search.toLowerCase()) ||
-      session.course.toLowerCase().includes(search.toLowerCase()) ||
-      session.type.toLowerCase().includes(search.toLowerCase());
+      studentName.includes(search.toLowerCase()) ||
+      menteeCourse.toLowerCase().includes(search.toLowerCase()) ||
+      sessionType.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter =
-      filter === "All" || session.status === filter;
+      filter === "All" || displayStatus === filter;
 
     return matchesSearch && matchesFilter;
   });
 
   const upcomingCount = sessions.filter(
     (session) =>
-      session.status === "Upcoming" || session.status === "Scheduled"
+      session.status === "pending" ||
+      session.status === "confirmed"
   ).length;
 
   const completedCount = sessions.filter(
-    (session) => session.status === "Completed"
+    (session) => session.status === "completed"
   ).length;
 
   const cancelledCount = sessions.filter(
-    (session) => session.status === "Cancelled"
+    (session) => session.status === "declined"
   ).length;
 
-  const handleScheduleSession = (event) => {
+  const handleScheduleSession = async (event) => {
     event.preventDefault();
 
-    const formattedDate = new Date(
-      `${newSession.date}T00:00:00`
-    ).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    setFormError("");
 
-    const formattedTime = new Date(
-      `1970-01-01T${newSession.time}`
-    ).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const token = getToken();
 
-    const sessionToAdd = {
-      id: sessions.length + 1,
-      student: newSession.student,
-      course: newSession.course,
-      date: formattedDate,
-      time: formattedTime,
-      type: newSession.type,
-      status: newSession.status,
-    };
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-    setSessions([...sessions, sessionToAdd]);
+    const selectedMentee = mentees.find(
+      (mentee) =>
+        mentee.name.toLowerCase() ===
+        newSession.student.trim().toLowerCase()
+    );
 
-    setNewSession({
-      student: "",
-      course: "",
-      date: "",
-      time: "",
-      type: "Academic Discussion",
-      status: "Upcoming",
-    });
+    if (!selectedMentee) {
+      setFormError(
+        "Please enter the exact name of one of your assigned mentees."
+      );
+      return;
+    }
 
-    setShowScheduleForm(false);
+    if (
+      newSession.course.trim() &&
+      selectedMentee.programme.toLowerCase() !==
+        newSession.course.trim().toLowerCase()
+    ) {
+      setFormError(
+        "The entered course does not match the selected mentee."
+      );
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const formattedTime = formatTime(newSession.time);
+
+      const response = await axios.post(
+        `${API_BASE_URL}/api/mentor/sessions`,
+        {
+          menteeId: selectedMentee.id,
+          date: newSession.date,
+          label: `${formatDate(newSession.date)}`,
+          time: newSession.time,
+          timeLabel: formattedTime,
+          duration: "30 minutes",
+          mode: "In-person",
+          agenda: newSession.type,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const createdSession = {
+        ...response.data.session,
+        type: newSession.type,
+      };
+
+      setSessions((current) => [
+        createdSession,
+        ...current,
+      ]);
+
+      setNewSession({
+        student: "",
+        course: "",
+        date: "",
+        time: "",
+        type: "Academic Discussion",
+      });
+
+      setShowScheduleForm(false);
+    } catch (err) {
+      console.error("Schedule session error:", err);
+
+      if (handleAuthError(err)) {
+        return;
+      }
+
+      setFormError(
+        err.response?.data?.error ||
+          "Unable to schedule the session."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-full bg-[#080C14] p-6 text-white">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-slate-700 border-t-purple-500" />
+
+            <p className="mt-4 text-sm text-slate-400">
+              Loading sessions...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#080C14] p-6 text-white">
@@ -159,12 +380,31 @@ function Sessions() {
         </div>
 
         <button
-          onClick={() => setShowScheduleForm(true)}
+          onClick={() => {
+            setFormError("");
+            setShowScheduleForm(true);
+          }}
           className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:scale-[1.02]"
         >
           + Schedule Session
         </button>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/5 px-5 py-4">
+          <p className="text-sm text-red-400">
+            {error}
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 text-xs font-medium text-red-300 hover:text-red-200"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -272,73 +512,94 @@ function Sessions() {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-800">
-              {filteredSessions.map((session) => (
-                <tr
-                  key={session.id}
-                  className="transition hover:bg-[#141B2A]"
-                >
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-sm font-bold">
-                        {session.student
-                          .split(" ")
-                          .map((word) => word[0])
-                          .join("")}
+            <tbody className="divide-y divide-[#27334A]">
+              {filteredSessions.map((session) => {
+                const mentee = mentees.find(
+                  (item) => item.id === session.menteeId
+                );
+
+                const studentName =
+                  session.menteeName ||
+                  mentee?.name ||
+                  "Mentee";
+
+                const course =
+                  mentee?.programme ||
+                  "Mentoring";
+
+                const displayStatus =
+                  getDisplayStatus(session.status);
+
+                const sessionType =
+                  getSessionType(session);
+
+                return (
+                  <tr
+                    key={session.id}
+                    className="transition hover:bg-[#141B2A]"
+                  >
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-sm font-bold">
+                          {getInitials(studentName)}
+                        </div>
+
+                        <div>
+                          <p className="font-semibold text-white">
+                            {studentName}
+                          </p>
+
+                          <p className="mt-1 text-xs text-slate-500">
+                            {course}
+                          </p>
+                        </div>
                       </div>
+                    </td>
 
-                      <div>
-                        <p className="font-semibold text-white">
-                          {session.student}
-                        </p>
+                    <td className="px-6 py-5">
+                      <p className="text-sm font-medium text-slate-300">
+                        {session.label ||
+                          formatDate(session.date)}
+                      </p>
 
-                        <p className="mt-1 text-xs text-slate-500">
-                          {session.course}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {session.timeLabel ||
+                          formatTime(session.time)}
+                      </p>
+                    </td>
 
-                  <td className="px-6 py-5">
-                    <p className="text-sm font-medium text-slate-300">
-                      {session.date}
-                    </p>
+                    <td className="px-6 py-5 text-sm text-slate-300">
+                      {sessionType}
+                    </td>
 
-                    <p className="mt-1 text-xs text-slate-500">
-                      {session.time}
-                    </p>
-                  </td>
+                    <td className="px-6 py-5">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(
+                          session.status
+                        )}`}
+                      >
+                        {displayStatus}
+                      </span>
+                    </td>
 
-                  <td className="px-6 py-5 text-sm text-slate-300">
-                    {session.type}
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        session.status === "Completed"
-                          ? "bg-emerald-500/10 text-emerald-400"
-                          : session.status === "Cancelled"
-                          ? "bg-red-500/10 text-red-400"
-                          : session.status === "Scheduled"
-                          ? "bg-purple-500/10 text-purple-400"
-                          : "bg-blue-500/10 text-blue-400"
-                      }`}
-                    >
-                      {session.status}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <button
-                      onClick={() => setSelectedSession(session)}
-                      className="rounded-lg border border-[#33415C] px-3 py-2 text-xs font-medium text-blue-400 transition hover:border-blue-500 hover:bg-blue-500/10"
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-6 py-5">
+                      <button
+                        onClick={() =>
+                          setSelectedSession({
+                            ...session,
+                            student: studentName,
+                            course,
+                            type: sessionType,
+                          })
+                        }
+                        className="rounded-lg border border-[#33415C] px-3 py-2 text-xs font-medium text-blue-400 transition hover:border-blue-500 hover:bg-blue-500/10"
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -360,12 +621,23 @@ function Sessions() {
               </h2>
 
               <button
-                onClick={() => setShowScheduleForm(false)}
+                onClick={() => {
+                  setShowScheduleForm(false);
+                  setFormError("");
+                }}
                 className="text-xl text-slate-400 hover:text-white"
               >
                 ×
               </button>
             </div>
+
+            {formError && (
+              <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/5 p-3">
+                <p className="text-sm text-red-400">
+                  {formError}
+                </p>
+              </div>
+            )}
 
             <form
               onSubmit={handleScheduleSession}
@@ -381,9 +653,19 @@ function Sessions() {
                     student: event.target.value,
                   })
                 }
+                list="mentor-mentees"
                 required
                 className="w-full rounded-xl border border-[#33415C] bg-[#0B111D] px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
               />
+
+              <datalist id="mentor-mentees">
+                {mentees.map((mentee) => (
+                  <option
+                    key={mentee.id}
+                    value={mentee.name}
+                  />
+                ))}
+              </datalist>
 
               <input
                 type="text"
@@ -395,7 +677,6 @@ function Sessions() {
                     course: event.target.value,
                   })
                 }
-                required
                 className="w-full rounded-xl border border-[#33415C] bg-[#0B111D] px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
               />
 
@@ -444,7 +725,10 @@ function Sessions() {
               <div className="flex justify-end gap-3 pt-3">
                 <button
                   type="button"
-                  onClick={() => setShowScheduleForm(false)}
+                  onClick={() => {
+                    setShowScheduleForm(false);
+                    setFormError("");
+                  }}
                   className="rounded-lg border border-[#33415C] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800"
                 >
                   Cancel
@@ -452,9 +736,10 @@ function Sessions() {
 
                 <button
                   type="submit"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                  disabled={submitting}
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Schedule
+                  {submitting ? "Scheduling..." : "Schedule"}
                 </button>
               </div>
             </form>
@@ -506,8 +791,11 @@ function Sessions() {
                 </p>
 
                 <p className="mt-1 text-slate-300">
-                  {selectedSession.date} at{" "}
-                  {selectedSession.time}
+                  {selectedSession.label ||
+                    formatDate(selectedSession.date)}{" "}
+                  at{" "}
+                  {selectedSession.timeLabel ||
+                    formatTime(selectedSession.time)}
                 </p>
               </div>
 
@@ -517,7 +805,30 @@ function Sessions() {
                 </p>
 
                 <p className="mt-1 text-slate-300">
-                  {selectedSession.type}
+                  {selectedSession.type ||
+                    getSessionType(selectedSession)}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">
+                  Mode
+                </p>
+
+                <p className="mt-1 text-slate-300">
+                  {selectedSession.mode ||
+                    "In-person"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500">
+                  Duration
+                </p>
+
+                <p className="mt-1 text-slate-300">
+                  {selectedSession.duration ||
+                    "30 minutes"}
                 </p>
               </div>
 
@@ -527,9 +838,23 @@ function Sessions() {
                 </p>
 
                 <p className="mt-1 text-blue-400">
-                  {selectedSession.status}
+                  {getDisplayStatus(
+                    selectedSession.status
+                  )}
                 </p>
               </div>
+
+              {selectedSession.agenda && (
+                <div>
+                  <p className="text-slate-500">
+                    Agenda
+                  </p>
+
+                  <p className="mt-1 text-slate-300">
+                    {selectedSession.agenda}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end">
