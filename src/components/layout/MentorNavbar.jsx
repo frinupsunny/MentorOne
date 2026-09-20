@@ -8,7 +8,7 @@ import {
 
 function MentorNavbar({ onMenuClick }) {
   return (
-    <header className="h-16 w-full flex-shrink-0 flex items-center justify-between gap-4 px-4 sm:px-6 bg-[#0D1220] border-b border-slate-800/80 sticky top-0 z-30">
+    <header className="h-16 w-full flex-shrink-0 flex items-center justify-between gap-4 px-4 sm:px-6 bg-[#0D1220] border-b border-[#27334A] sticky top-0 z-30">
       
       {/* LEFT */}
       <div className="flex min-w-0 items-center gap-3">
@@ -35,7 +35,7 @@ function MentorNavbar({ onMenuClick }) {
       <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
 
         {/* SEARCH */}
-        <div className="hidden md:flex h-10 w-48 lg:w-64 items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 px-3">
+        <div className="hidden md:flex h-10 w-48 lg:w-64 items-center gap-2 rounded-lg border border-[#33415C] bg-[#101624] px-3">
           <FiSearch className="flex-shrink-0 text-slate-500" />
 
           <input
@@ -74,11 +74,11 @@ function MentorNavbar({ onMenuClick }) {
         </button>
 
         {/* DIVIDER */}
-        <div className="mx-1 hidden h-7 border-l border-slate-700/70 sm:block" />
+        <div className="mx-1 hidden h-7 border-l border-[#33415C]/70 sm:block" />
 
         {/* PROFILE */}
         <div className="flex items-center gap-2 pl-1">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-[11px] font-bold text-white">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-[11px] font-bold text-white">
             AM
           </div>
 

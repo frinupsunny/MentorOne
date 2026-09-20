@@ -23,6 +23,22 @@ import Calendar from "./pages/Coordinator/Calendar";
 import Documents from "./pages/Coordinator/Documents";
 import Settings from "./pages/Coordinator/Settings";
 
+
+// =========================
+// Mentor Pages
+// =========================
+
+import MentorDashboard from "./pages/Mentor/Dashboard";
+import MentorMentees from "./pages/Mentor/MyMentees";
+import MentorSessions from "./pages/Mentor/Sessions";
+import MentorGroupMeetings from "./pages/Mentor/GroupMeetings";
+import FindMentorMentee from "./pages/Mentor/FindMentorMentee";
+import OTPVerification from "./pages/Mentor/OTPVerification";
+import MentorRemarks from "./pages/Mentor/MentorRemarks";
+import ReportIssue from "./pages/Mentor/ReportIssue";
+import HODNotices from "./pages/Mentor/HODNotices";
+import MentorFeedback from "./pages/Mentor/MentorFeedback";
+
 // =========================
 // Login
 // =========================
@@ -164,29 +180,100 @@ function App() {
         />
 
 
-        {/* ==================================================
-            MENTOR
-        ================================================== */}
+  {/* ==================================================
+        MENTOR
+     ================================================== */}
 
         <Route
-          path="/mentor"
-          element={
-            <MentorLayout>
-              <div className="flex min-h-full items-center justify-center bg-[#080C14] p-6">
-                <div className="text-center">
-                  <h1 className="text-3xl font-bold text-white">
-                    Mentor Dashboard
-                  </h1>
+  path="/mentor"
+  element={
+    <MentorLayout>
+      <MentorDashboard />
+    </MentorLayout>
+  }
+/>
 
-                  <p className="mt-2 text-slate-500">
-                    Mentor module is under development.
-                  </p>
-                </div>
-              </div>
-            </MentorLayout>
-          }
-        />
+<Route
+  path="/mentor/mentees"
+  element={
+    <MentorLayout>
+      <MentorMentees />
+    </MentorLayout>
+  }
+/>
 
+<Route
+  path="/mentor/sessions"
+  element={
+    <MentorLayout>
+      <MentorSessions />
+    </MentorLayout>
+  }
+/>
+
+
+<Route
+  path="/mentor/group-meetings"
+  element={
+    <MentorLayout>
+      <MentorGroupMeetings />
+    </MentorLayout>
+  }
+/>
+
+<Route
+  path="/mentor/find-mentor"
+  element={
+    <MentorLayout>
+      <FindMentorMentee />
+    </MentorLayout>
+  }
+/>
+
+<Route
+  path="/mentor/otp"
+  element={
+    <MentorLayout>
+      <OTPVerification />
+    </MentorLayout>
+  }
+/>
+
+<Route
+  path="/mentor/remarks"
+  element={
+    <MentorLayout>
+      <MentorRemarks />
+    </MentorLayout>
+  }
+/>
+
+<Route
+  path="/mentor/report-issue"
+  element={
+    <MentorLayout>
+      <ReportIssue />
+    </MentorLayout>
+  }
+/>
+
+<Route
+  path="/mentor/hod-notices"
+  element={
+    <MentorLayout>
+      <HODNotices />
+    </MentorLayout>
+  }
+/>
+
+<Route
+  path="/mentor/feedback"
+  element={
+    <MentorLayout>
+      <MentorFeedback />
+    </MentorLayout>
+  }
+/>
 
         {/* ==================================================
             DEFAULT

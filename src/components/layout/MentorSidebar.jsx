@@ -34,7 +34,7 @@ function MentorSidebar({ mobileOpen, setMobileOpen }) {
     {
       label: "Find Mentor-Mentee",
       icon: FiSearch,
-      path: "/mentor/connect",
+      path: "/mentor/find-mentor",
     },
     {
       label: "Sessions",
@@ -70,11 +70,6 @@ function MentorSidebar({ mobileOpen, setMobileOpen }) {
       label: "Feedback",
       icon: FiMessageSquare,
       path: "/mentor/feedback",
-    },
-    {
-      label: "Profile",
-      icon: FiUser,
-      path: "/mentor/profile",
     },
   ];
 
@@ -132,7 +127,7 @@ function MentorSidebar({ mobileOpen, setMobileOpen }) {
       <aside
         className={`
           fixed inset-y-0 left-0 z-50 w-72
-          transform border-r border-slate-800/80 bg-[#0D1220]
+          transform border-r border-[#27334A] bg-[#0D1220]
           transition-transform duration-300
           lg:static lg:z-auto lg:translate-x-0
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
@@ -143,7 +138,7 @@ function MentorSidebar({ mobileOpen, setMobileOpen }) {
           {/* =========================
               UNIVERSITY
           ========================= */}
-          <div className="border-b border-slate-800/80 px-5 py-5">
+          <div className="border-b border-[#27334A] px-5 py-5">
             <div className="flex items-center gap-3">
 
               <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white text-lg font-bold text-[#0D1220]">
@@ -177,7 +172,7 @@ function MentorSidebar({ mobileOpen, setMobileOpen }) {
           <div className="px-5 py-6">
             <div className="flex items-center gap-3">
 
-              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-xl shadow-lg shadow-indigo-500/20">
+              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 text-xl shadow-lg shadow-indigo-500/20">
                 <FiUsers className="text-white" />
               </div>
 
@@ -264,12 +259,12 @@ function MentorSidebar({ mobileOpen, setMobileOpen }) {
           {/* =========================
               USER + SIGN OUT
           ========================= */}
-          <div className="border-t border-slate-800/80 p-4">
+          <div className="border-t border-[#27334A] p-4">
 
             {/* PROFILE */}
             <div className="flex items-center gap-3">
 
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-xs font-bold text-white">
                 AM
               </div>
 
