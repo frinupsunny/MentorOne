@@ -1,883 +1,1021 @@
 import { useMemo, useState } from "react";
 import {
-  FiSearch,
-  FiFilter,
   FiStar,
+  FiSearch,
+  FiUser,
   FiMessageSquare,
-  FiCheckCircle,
-  FiClock,
+  FiCalendar,
+  FiChevronDown,
+  FiChevronUp,
+  FiEdit3,
   FiX,
-  FiEye,
+  FiSend,
+  FiCheckCircle,
 } from "react-icons/fi";
 
-const initialFeedback = [
-  {
-    id: 1,
-    mentee: "Jasmine A",
-    mentor: "Dr. Anitha",
-    rating: 5,
-    category: "Mentor Support",
-    comment:
-      "The mentor provides clear guidance and is always available when I need help.",
-    date: "16 Aug 2026",
-    status: "Reviewed",
-  },
-  {
-    id: 2,
-    mentee: "Frinu P",
-    mentor: "Dr. Ramesh",
-    rating: 4,
-    category: "Session Quality",
-    comment:
-      "The sessions are useful and well structured. I would like slightly more frequent meetings.",
-    date: "15 Aug 2026",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    mentee: "Sanjay K",
-    mentor: "Dr. Sunita",
-    rating: 3,
-    category: "Communication",
-    comment:
-      "The sessions are helpful, but communication between sessions could be improved.",
-    date: "14 Aug 2026",
-    status: "Pending",
-  },
-  {
-    id: 4,
-    mentee: "Akhil T",
-    mentor: "Mr. Arun",
-    rating: 5,
-    category: "Mentor Support",
-    comment:
-      "Very supportive mentor. The feedback and suggestions have helped me improve.",
-    date: "13 Aug 2026",
-    status: "Reviewed",
-  },
-  {
-    id: 5,
-    mentee: "Megha S",
-    mentor: "Dr. Vivek",
-    rating: 4,
-    category: "Session Quality",
-    comment:
-      "Good mentoring sessions with practical suggestions for academic improvement.",
-    date: "12 Aug 2026",
-    status: "Reviewed",
-  },
-];
-
 function Feedback() {
-  const [feedback, setFeedback] =
-    useState(initialFeedback);
-
   const [search, setSearch] = useState("");
-
-  const [ratingFilter, setRatingFilter] =
-    useState("All");
-
-  const [statusFilter, setStatusFilter] =
-    useState("All");
-
-  const [showFilters, setShowFilters] =
+  const [ratingFilter, setRatingFilter] = useState("All");
+  const [expandedId, setExpandedId] = useState(1);
+  const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [showCoordinatorForm, setShowCoordinatorForm] =
     useState(false);
+  const [coordinatorFeedback, setCoordinatorFeedback] =
+    useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-  const [selectedFeedback, setSelectedFeedback] =
-    useState(null);
+  /* =====================================================
+     FEEDBACK DATA
+  ===================================================== */
 
-  const [message, setMessage] = useState("");
+  const mentorFeedback = [
+    {
+      id: 1,
+      mentor: "Dr. Ramesh Kumar",
+      initials: "RK",
+      department: "Data Science",
+      mentees: 5,
+      average: 4.8,
+      responses: 5,
+      categories: {
+        availability: 4.9,
+        communication: 4.7,
+        academicGuidance: 4.8,
+        sessionRegularity: 4.8,
+      },
+      feedback: [
+        {
+          name: "Jasmine A",
+          rating: 5,
+          date: "23 July 2026",
+          comment:
+            "Dr. Ramesh is very supportive and gives clear guidance whenever I have academic doubts.",
+        },
+        {
+          name: "Rahul Kumar",
+          rating: 5,
+          date: "21 July 2026",
+          comment:
+            "The mentoring sessions are useful and the mentor is always available when needed.",
+        },
+        {
+          name: "Ananya S",
+          rating: 4,
+          date: "20 July 2026",
+          comment:
+            "Good mentoring experience. The sessions helped me understand my academic goals better.",
+        },
+      ],
+    },
 
-  /* ================================
-     COUNTS
-  ================================= */
+    {
+      id: 2,
+      mentor: "Dr. Meena S",
+      initials: "MS",
+      department: "Data Science",
+      mentees: 15,
+      average: 4.6,
+      responses: 8,
+      categories: {
+        availability: 4.7,
+        communication: 4.6,
+        academicGuidance: 4.5,
+        sessionRegularity: 4.6,
+      },
+      feedback: [
+        {
+          name: "Rahul Kumar",
+          rating: 5,
+          date: "22 July 2026",
+          comment:
+            "Very approachable mentor and always willing to listen to concerns.",
+        },
+        {
+          name: "Akhil Thomas",
+          rating: 4,
+          date: "19 July 2026",
+          comment:
+            "The sessions are informative and help with planning academic activities.",
+        },
+      ],
+    },
 
-  const totalFeedback = feedback.length;
+    {
+      id: 3,
+      mentor: "Dr. Anitha Joseph",
+      initials: "AJ",
+      department: "Computer Science",
+      mentees: 10,
+      average: 4.2,
+      responses: 6,
+      categories: {
+        availability: 4.3,
+        communication: 4.2,
+        academicGuidance: 4.4,
+        sessionRegularity: 3.9,
+      },
+      feedback: [
+        {
+          name: "Ananya S",
+          rating: 4,
+          date: "18 July 2026",
+          comment:
+            "Helpful mentor with good academic guidance.",
+        },
+        {
+          name: "Arjun P",
+          rating: 4,
+          date: "16 July 2026",
+          comment:
+            "The mentor provides useful suggestions for improving academic performance.",
+        },
+      ],
+    },
 
-  const pendingCount = feedback.filter(
-    (item) => item.status === "Pending"
-  ).length;
+    {
+      id: 4,
+      mentor: "Dr. Arun Mathew",
+      initials: "AM",
+      department: "Computer Science",
+      mentees: 8,
+      average: 3.9,
+      responses: 4,
+      categories: {
+        availability: 3.8,
+        communication: 4.0,
+        academicGuidance: 4.1,
+        sessionRegularity: 3.7,
+      },
+      feedback: [
+        {
+          name: "Arjun P",
+          rating: 4,
+          date: "14 July 2026",
+          comment:
+            "Good academic guidance and helpful suggestions.",
+        },
+        {
+          name: "Sanjay K",
+          rating: 3,
+          date: "12 July 2026",
+          comment:
+            "The sessions are useful, but more frequent meetings would be helpful.",
+        },
+      ],
+    },
+  ];
 
-  const reviewedCount = feedback.filter(
-    (item) => item.status === "Reviewed"
-  ).length;
+  /* =====================================================
+     SEARCH + FILTER
+  ===================================================== */
 
-  const averageRating =
-    feedback.length > 0
-      ? (
-          feedback.reduce(
-            (total, item) => total + item.rating,
-            0
-          ) / feedback.length
-        ).toFixed(1)
-      : "0.0";
+  const filteredMentors = useMemo(() => {
+    const query = search.toLowerCase().trim();
 
-  /* ================================
-     FILTER
-  ================================= */
+    return mentorFeedback.filter((mentor) => {
+      const matchesSearch =
+        mentor.mentor.toLowerCase().includes(query) ||
+        mentor.department.toLowerCase().includes(query) ||
+        mentor.feedback.some(
+          (item) =>
+            item.name.toLowerCase().includes(query) ||
+            item.comment.toLowerCase().includes(query)
+        );
 
-  const filteredFeedback = useMemo(() => {
-    return feedback.filter((item) => {
-      const searchMatch =
-        item.mentee
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        item.mentor
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        item.comment
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        item.category
-          .toLowerCase()
-          .includes(search.toLowerCase());
+      let matchesRating = true;
 
-      const ratingMatch =
-        ratingFilter === "All" ||
-        item.rating === Number(ratingFilter);
+      if (ratingFilter === "4+") {
+        matchesRating = mentor.average >= 4;
+      }
 
-      const statusMatch =
-        statusFilter === "All" ||
-        item.status === statusFilter;
+      if (ratingFilter === "Below 4") {
+        matchesRating = mentor.average < 4;
+      }
 
-      return (
-        searchMatch &&
-        ratingMatch &&
-        statusMatch
-      );
+      if (ratingFilter === "5") {
+        matchesRating = mentor.average === 5;
+      }
+
+      return matchesSearch && matchesRating;
     });
-  }, [
-    feedback,
-    search,
-    ratingFilter,
-    statusFilter,
-  ]);
+  }, [search, ratingFilter]);
 
-  /* ================================
-     MARK AS REVIEWED
-  ================================= */
+  /* =====================================================
+     SUMMARY
+  ===================================================== */
 
-  const markAsReviewed = (id) => {
-    setFeedback((current) =>
-      current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: "Reviewed",
-            }
-          : item
-      )
+  const overallRating =
+    mentorFeedback.reduce(
+      (total, mentor) => total + mentor.average,
+      0
+    ) / mentorFeedback.length;
+
+  const totalResponses = mentorFeedback.reduce(
+    (total, mentor) => total + mentor.responses,
+    0
+  );
+
+  /* =====================================================
+     HELPERS
+  ===================================================== */
+
+  const toggleMentor = (id) => {
+    setExpandedId((current) =>
+      current === id ? null : id
     );
-
-    setSelectedFeedback(null);
-    setMessage("Feedback marked as reviewed.");
   };
 
-  /* ================================
-     CLEAR FILTERS
-  ================================= */
+  const getRatingClass = (rating) => {
+    if (rating >= 4.5) {
+      return "text-emerald-400";
+    }
 
-  const clearFilters = () => {
-    setSearch("");
-    setRatingFilter("All");
-    setStatusFilter("All");
+    if (rating >= 4) {
+      return "text-indigo-400";
+    }
+
+    if (rating >= 3) {
+      return "text-orange-400";
+    }
+
+    return "text-red-400";
   };
 
-  /* ================================
-     STAR COMPONENT
-  ================================= */
+  const getProgressWidth = (rating) => {
+    return `${(rating / 5) * 100}%`;
+  };
 
-  const RatingStars = ({ rating }) => {
+  const renderStars = (rating, size = "text-sm") => {
     return (
-      <div className="flex items-center gap-0.5">
+      <div className={`flex items-center gap-0.5 ${size}`}>
         {[1, 2, 3, 4, 5].map((star) => (
-          <FiStar
+          <span
             key={star}
-            className={`text-sm ${
-              star <= rating
-                ? "fill-amber-400 text-amber-400"
+            className={
+              star <= Math.round(rating)
+                ? "text-amber-400"
                 : "text-slate-700"
-            }`}
-          />
+            }
+          >
+            ★
+          </span>
         ))}
       </div>
     );
   };
 
+  /* =====================================================
+     SUBMIT COORDINATOR FEEDBACK
+  ===================================================== */
+
+  const submitCoordinatorFeedback = () => {
+    if (!coordinatorFeedback.trim()) {
+      return;
+    }
+
+    setSubmitted(true);
+    setCoordinatorFeedback("");
+  };
+
   return (
-    <div className="p-5 sm:p-6 lg:p-7">
+    <div className="min-h-full bg-[#080C14] p-6">
 
-      {/* =================================
+      {/* =====================================================
           HEADER
-      ================================= */}
+      ===================================================== */}
 
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <section className="mb-6">
 
-        <div>
-          <h1 className="text-2xl font-semibold text-white">
-            Feedback
-          </h1>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-          <p className="mt-1 text-sm text-slate-400">
-            Review feedback from mentors and mentees
-          </p>
-        </div>
+          <div>
 
-        <button
-          type="button"
-          onClick={() =>
-            setShowFilters(!showFilters)
-          }
-          className={`inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-medium transition ${
-            showFilters
-              ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-400"
-              : "border-slate-800 bg-slate-900/70 text-slate-400 hover:border-slate-700 hover:text-white"
-          }`}
-        >
-          <FiFilter />
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span>Coordinator</span>
+              <span>→</span>
+              <span className="text-slate-300">
+                Feedback
+              </span>
+            </div>
 
-          Filters
-        </button>
+            <h1 className="mt-3 text-2xl font-bold tracking-tight text-white">
+              Feedback
+            </h1>
 
-      </div>
+            <p className="mt-1 text-sm text-slate-400">
+              View mentee feedback on mentors and provide coordinator feedback.
+            </p>
 
-      {/* =================================
-          SUCCESS MESSAGE
-      ================================= */}
+          </div>
 
-      {message && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-emerald-400">
-
-          <FiCheckCircle />
-
-          <p className="text-xs">
-            {message}
-          </p>
 
           <button
-            type="button"
-            onClick={() => setMessage("")}
-            className="ml-auto"
+            onClick={() =>
+              setShowCoordinatorForm(true)
+            }
+            className="flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600"
           >
-            <FiX />
+            <FiEdit3 size={16} />
+            Give Coordinator Feedback
           </button>
 
         </div>
-      )}
 
-      {/* =================================
+      </section>
+
+
+      {/* =====================================================
           SUMMARY CARDS
-      ================================= */}
+      ===================================================== */}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section>
 
-        {/* TOTAL */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+          <SummaryCard
+            icon={<FiStar />}
+            title="Overall Rating"
+            value={overallRating.toFixed(1)}
+            description="Average mentor rating"
+            iconClass="bg-amber-500/10 text-amber-400"
+            extra={renderStars(overallRating)}
+          />
 
-          <div className="flex items-center justify-between">
+          <SummaryCard
+            icon={<FiMessageSquare />}
+            title="Responses"
+            value={totalResponses}
+            description="Mentee feedback responses"
+            iconClass="bg-indigo-500/10 text-indigo-400"
+          />
 
-            <div>
-              <p className="text-xs font-medium text-slate-500">
-                Total Feedback
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {totalFeedback}
-              </p>
-
-              <p className="mt-1 text-[11px] text-slate-600">
-                All submissions
-              </p>
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
-              <FiMessageSquare />
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* AVERAGE */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <p className="text-xs font-medium text-slate-500">
-                Average Rating
-              </p>
-
-              <div className="mt-2 flex items-center gap-2">
-                <p className="text-2xl font-semibold text-white">
-                  {averageRating}
-                </p>
-
-                <FiStar className="fill-amber-400 text-amber-400" />
-              </div>
-
-              <p className="mt-1 text-[11px] text-amber-400">
-                Out of 5.0
-              </p>
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
-              <FiStar />
-            </div>
-
-          </div>
+          <SummaryCard
+            icon={<FiUser />}
+            title="Mentors Reviewed"
+            value={mentorFeedback.length}
+            description="Mentors with feedback"
+            iconClass="bg-purple-500/10 text-purple-400"
+          />
 
         </div>
 
-        {/* PENDING */}
+      </section>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
 
-          <div className="flex items-center justify-between">
+      {/* =====================================================
+          SEARCH + FILTER
+      ===================================================== */}
 
-            <div>
-              <p className="text-xs font-medium text-slate-500">
-                Pending Review
-              </p>
+      <section className="mt-6 rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
 
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {pendingCount}
-              </p>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
-              <p className="mt-1 text-[11px] text-amber-400">
-                Needs attention
-              </p>
-            </div>
+          <div className="relative w-full lg:max-w-xl">
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
-              <FiClock />
-            </div>
+            <FiSearch
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            />
 
-          </div>
-
-        </div>
-
-        {/* REVIEWED */}
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <p className="text-xs font-medium text-slate-500">
-                Reviewed
-              </p>
-
-              <p className="mt-2 text-2xl font-semibold text-white">
-                {reviewedCount}
-              </p>
-
-              <p className="mt-1 text-[11px] text-emerald-400">
-                Completed
-              </p>
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
-              <FiCheckCircle />
-            </div>
+            <input
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              placeholder="Search mentor, mentee or feedback..."
+              className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900/60 pl-11 pr-4 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-indigo-500/50"
+            />
 
           </div>
 
-        </div>
 
-      </div>
-
-      {/* =================================
-          FEEDBACK LIST
-      ================================= */}
-
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70">
-
-        {/* LIST HEADER */}
-
-        <div className="border-b border-slate-800 px-5 py-4">
-
-          <div className="flex flex-col gap-4">
-
-            <div>
-              <h2 className="text-base font-semibold text-white">
-                Recent Feedback
-              </h2>
-
-              <p className="mt-1 text-xs text-slate-500">
-                Feedback submitted by mentees about their mentoring experience
-              </p>
-            </div>
-
-            {/* SEARCH */}
-
-            <div className="relative">
-
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-
-              <input
-                type="text"
-                value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
-                placeholder="Search mentor, mentee or feedback..."
-                className="w-full rounded-xl border border-slate-800 bg-slate-950/50 py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-indigo-500"
-              />
-
-            </div>
-
-            {/* FILTER PANEL */}
-
-            {showFilters && (
-              <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-800 bg-slate-950/30 p-4 md:grid-cols-3">
-
-                {/* RATING */}
-
-                <div>
-
-                  <label className="mb-2 block text-[11px] font-medium text-slate-500">
-                    Rating
-                  </label>
-
-                  <select
-                    value={ratingFilter}
-                    onChange={(e) =>
-                      setRatingFilter(
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
-                  >
-                    <option value="All">
-                      All Ratings
-                    </option>
-
-                    <option value="5">
-                      5 Stars
-                    </option>
-
-                    <option value="4">
-                      4 Stars
-                    </option>
-
-                    <option value="3">
-                      3 Stars
-                    </option>
-
-                    <option value="2">
-                      2 Stars
-                    </option>
-
-                    <option value="1">
-                      1 Star
-                    </option>
-                  </select>
-
-                </div>
-
-                {/* STATUS */}
-
-                <div>
-
-                  <label className="mb-2 block text-[11px] font-medium text-slate-500">
-                    Status
-                  </label>
-
-                  <select
-                    value={statusFilter}
-                    onChange={(e) =>
-                      setStatusFilter(
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
-                  >
-                    <option value="All">
-                      All Statuses
-                    </option>
-
-                    <option value="Pending">
-                      Pending
-                    </option>
-
-                    <option value="Reviewed">
-                      Reviewed
-                    </option>
-                  </select>
-
-                </div>
-
-                {/* CLEAR */}
-
-                <div className="flex items-end">
-
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-400 transition hover:border-slate-700 hover:text-white"
-                  >
-                    Clear Filters
-                  </button>
-
-                </div>
-
-              </div>
-            )}
-
-          </div>
+          <select
+            value={ratingFilter}
+            onChange={(e) =>
+              setRatingFilter(e.target.value)
+            }
+            className="h-11 rounded-xl border border-slate-800 bg-slate-900/60 px-4 text-sm text-slate-300 outline-none focus:border-indigo-500/50"
+          >
+            <option value="All">All Ratings</option>
+            <option value="5">5 Star</option>
+            <option value="4+">4+ Rating</option>
+            <option value="Below 4">
+              Below 4
+            </option>
+          </select>
 
         </div>
 
-        {/* =================================
-            ITEMS
-        ================================= */}
+      </section>
 
-        {filteredFeedback.length > 0 ? (
 
-          <div className="divide-y divide-slate-800">
+      {/* =====================================================
+          MENTOR FEEDBACK
+      ===================================================== */}
 
-            {filteredFeedback.map((item) => (
+      <section className="mt-6">
 
+        <div className="mb-4">
+
+          <h2 className="font-semibold text-white">
+            Mentor Feedback
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Mentee feedback and rating summaries for each mentor.
+          </p>
+
+        </div>
+
+
+        <div className="space-y-4">
+
+          {filteredMentors.map((mentor) => {
+
+            const expanded =
+              expandedId === mentor.id;
+
+            return (
               <div
-                key={item.id}
-                className="p-5 transition hover:bg-slate-800/20"
+                key={mentor.id}
+                className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0D1422]"
               >
 
-                <div className="flex flex-col gap-4">
+                {/* =================================================
+                    MENTOR HEADER
+                ================================================= */}
 
-                  {/* PERSON */}
+                <button
+                  onClick={() =>
+                    toggleMentor(mentor.id)
+                  }
+                  className="w-full p-5 text-left"
+                >
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
 
-                    <div className="flex items-center gap-3">
+                    {/* Mentor */}
+                    <div className="flex min-w-0 flex-1 items-center gap-4">
 
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-semibold text-white">
-                        {item.mentee
-                          .split(" ")
-                          .map(
-                            (word) =>
-                              word[0]
-                          )
-                          .join("")
-                          .slice(0, 2)}
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 font-bold text-indigo-400">
+                        {mentor.initials}
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
 
-                        <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm font-semibold text-white">
+                          {mentor.mentor}
+                        </h3>
 
-                          <h3 className="text-sm font-medium text-white">
-                            {item.mentee}
-                          </h3>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {mentor.department}
+                        </p>
 
-                          <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[9px] text-slate-500">
-                            Mentee
+                        <div className="mt-2 flex items-center gap-2">
+
+                          {renderStars(
+                            mentor.average,
+                            "text-xs"
+                          )}
+
+                          <span
+                            className={`text-xs font-semibold ${getRatingClass(
+                              mentor.average
+                            )}`}
+                          >
+                            {mentor.average.toFixed(1)}
                           </span>
 
                         </div>
 
-                        <p className="mt-1 text-xs text-slate-500">
-                          Mentor:{" "}
-                          <span className="text-slate-400">
-                            {item.mentor}
-                          </span>
-                        </p>
-
                       </div>
 
                     </div>
 
-                    <div className="flex items-center gap-3">
 
-                      <RatingStars
-                        rating={item.rating}
-                      />
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:w-[420px]">
 
-                      <span className="text-xs font-medium text-slate-400">
-                        {item.rating}.0
-                      </span>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-slate-600">
+                          Mentees
+                        </p>
 
-                    </div>
+                        <p className="mt-1 text-sm font-semibold text-white">
+                          {mentor.mentees}
+                        </p>
+                      </div>
 
-                  </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-slate-600">
+                          Responses
+                        </p>
 
-                  {/* COMMENT */}
+                        <p className="mt-1 text-sm font-semibold text-white">
+                          {mentor.responses}
+                        </p>
+                      </div>
 
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-slate-600">
+                          Average
+                        </p>
 
-                    <div className="flex items-start gap-3">
-
-                      <FiMessageSquare className="mt-0.5 shrink-0 text-slate-600" />
-
-                      <p className="text-sm leading-6 text-slate-300">
-                        {item.comment}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                  {/* BOTTOM */}
-
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                    <div className="flex flex-wrap items-center gap-2">
-
-                      <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-medium text-indigo-400">
-                        {item.category}
-                      </span>
-
-                      <span
-                        className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
-                          item.status ===
-                          "Pending"
-                            ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
-                            : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-
-                      <span className="text-[11px] text-slate-600">
-                        {item.date}
-                      </span>
-
-                    </div>
-
-                    <div className="flex items-center gap-2">
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedFeedback(
-                            item
-                          )
-                        }
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 px-3 py-2 text-[10px] font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-                      >
-                        <FiEye />
-
-                        View
-                      </button>
-
-                      {item.status ===
-                        "Pending" && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            markAsReviewed(
-                              item.id
-                            )
-                          }
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-[10px] font-medium text-emerald-400 transition hover:bg-emerald-500/20"
+                        <p
+                          className={`mt-1 text-sm font-semibold ${getRatingClass(
+                            mentor.average
+                          )}`}
                         >
-                          <FiCheckCircle />
+                          {mentor.average}/5
+                        </p>
+                      </div>
 
-                          Review
-                        </button>
+                    </div>
+
+
+                    {/* Expand */}
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-slate-900 text-slate-500">
+
+                      {expanded ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
                       )}
 
                     </div>
 
                   </div>
 
-                </div>
+                </button>
+
+
+                {/* =================================================
+                    EXPANDED CONTENT
+                ================================================= */}
+
+                {expanded && (
+
+                  <div className="border-t border-slate-800 p-5">
+
+                    {/* Category Ratings */}
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+                      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-5">
+
+                        <div className="mb-4 flex items-center justify-between">
+
+                          <div>
+                            <h4 className="text-sm font-semibold text-white">
+                              Overall Feedback Summary
+                            </h4>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              Based on {mentor.responses} mentee responses
+                            </p>
+                          </div>
+
+                          <div className="text-right">
+
+                            <p
+                              className={`text-3xl font-bold ${getRatingClass(
+                                mentor.average
+                              )}`}
+                            >
+                              {mentor.average}
+                            </p>
+
+                            {renderStars(
+                              mentor.average,
+                              "text-sm"
+                            )}
+
+                          </div>
+
+                        </div>
+
+
+                        <div className="space-y-4">
+
+                          <RatingBar
+                            label="Availability"
+                            rating={
+                              mentor.categories
+                                .availability
+                            }
+                            getProgressWidth={
+                              getProgressWidth
+                            }
+                          />
+
+                          <RatingBar
+                            label="Communication"
+                            rating={
+                              mentor.categories
+                                .communication
+                            }
+                            getProgressWidth={
+                              getProgressWidth
+                            }
+                          />
+
+                          <RatingBar
+                            label="Academic Guidance"
+                            rating={
+                              mentor.categories
+                                .academicGuidance
+                            }
+                            getProgressWidth={
+                              getProgressWidth
+                            }
+                          />
+
+                          <RatingBar
+                            label="Session Regularity"
+                            rating={
+                              mentor.categories
+                                .sessionRegularity
+                            }
+                            getProgressWidth={
+                              getProgressWidth
+                            }
+                          />
+
+                        </div>
+
+                      </div>
+
+
+                      {/* Feedback Count */}
+                      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-5">
+
+                        <h4 className="text-sm font-semibold text-white">
+                          Rating Overview
+                        </h4>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                          Feedback distribution
+                        </p>
+
+                        <div className="mt-5 space-y-3">
+
+                          <RatingDistribution
+                            label="5 Star"
+                            percentage={
+                              mentor.average >= 4.5
+                                ? 80
+                                : mentor.average >= 4
+                                ? 60
+                                : 30
+                            }
+                          />
+
+                          <RatingDistribution
+                            label="4 Star"
+                            percentage={
+                              mentor.average >= 4
+                                ? 25
+                                : 35
+                            }
+                          />
+
+                          <RatingDistribution
+                            label="3 Star"
+                            percentage={
+                              mentor.average < 4
+                                ? 25
+                                : 5
+                            }
+                          />
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+
+                    {/* =================================================
+                        INDIVIDUAL FEEDBACK
+                    ================================================= */}
+
+                    <div className="mt-5">
+
+                      <div className="mb-3 flex items-center justify-between">
+
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">
+                            Mentee Feedback
+                          </h4>
+
+                          <p className="mt-1 text-xs text-slate-500">
+                            Individual responses
+                          </p>
+                        </div>
+
+                        <FiMessageSquare className="text-indigo-400" />
+
+                      </div>
+
+
+                      <div className="space-y-3">
+
+                        {mentor.feedback.map(
+                          (item, index) => (
+
+                            <button
+                              key={index}
+                              onClick={() =>
+                                setSelectedFeedback({
+                                  ...item,
+                                  mentor:
+                                    mentor.mentor,
+                                })
+                              }
+                              className="w-full rounded-xl border border-slate-800 bg-slate-900/30 p-4 text-left transition hover:border-indigo-500/30 hover:bg-slate-900/60"
+                            >
+
+                              <div className="flex items-start gap-3">
+
+                                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-xs font-bold text-indigo-400">
+                                  {item.name
+                                    .split(" ")
+                                    .map(
+                                      (word) =>
+                                        word[0]
+                                    )
+                                    .slice(0, 2)
+                                    .join("")}
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+
+                                  <div className="flex items-start justify-between gap-3">
+
+                                    <div>
+
+                                      <p className="text-sm font-medium text-slate-200">
+                                        {item.name}
+                                      </p>
+
+                                      <div className="mt-1">
+                                        {renderStars(
+                                          item.rating,
+                                          "text-xs"
+                                        )}
+                                      </div>
+
+                                    </div>
+
+                                    <span className="flex-shrink-0 text-[10px] text-slate-600">
+                                      {item.date}
+                                    </span>
+
+                                  </div>
+
+                                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                                    {item.comment}
+                                  </p>
+
+                                </div>
+
+                              </div>
+
+                            </button>
+
+                          )
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                )}
 
               </div>
+            );
+          })}
 
-            ))}
+        </div>
 
-          </div>
 
-        ) : (
+        {/* Empty */}
+        {filteredMentors.length === 0 && (
 
-          <div className="px-5 py-16 text-center">
+          <div className="rounded-2xl border border-slate-800 bg-[#0D1422] px-6 py-16 text-center">
 
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800/60 text-slate-500">
-              <FiMessageSquare className="text-2xl" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-slate-600">
+              <FiStar size={22} />
             </div>
 
-            <h3 className="mt-4 text-sm font-medium text-white">
+            <h3 className="mt-4 text-sm font-semibold text-white">
               No feedback found
             </h3>
 
-            <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
-              Try changing your search or filters.
+            <p className="mt-1 text-xs text-slate-500">
+              Try changing your search or rating filter.
             </p>
 
           </div>
 
         )}
 
-      </div>
+      </section>
 
-      {/* =================================
-          DETAILS MODAL
-      ================================= */}
 
-      {selectedFeedback && (
+      {/* =====================================================
+          COORDINATOR FEEDBACK MODAL
+      ===================================================== */}
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      {showCoordinatorForm && (
 
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0D1220] shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
 
-            {/* HEADER */}
+          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0D1422] shadow-2xl">
 
-            <div className="flex items-start justify-between border-b border-slate-800 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-800 p-5">
 
               <div>
 
-                <h2 className="text-base font-semibold text-white">
-                  Feedback Details
+                <h2 className="font-semibold text-white">
+                  Coordinator Feedback
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  Submitted on{" "}
-                  {selectedFeedback.date}
+                  Provide feedback for the mentoring team.
                 </p>
 
               </div>
 
               <button
-                type="button"
                 onClick={() =>
-                  setSelectedFeedback(null)
+                  setShowCoordinatorForm(false)
                 }
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white"
               >
                 <FiX />
               </button>
 
             </div>
 
-            {/* CONTENT */}
+
+            <div className="p-5">
+
+              {submitted ? (
+
+                <div className="py-8 text-center">
+
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+                    <FiCheckCircle size={25} />
+                  </div>
+
+                  <h3 className="mt-4 font-semibold text-white">
+                    Feedback Submitted
+                  </h3>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Your coordinator feedback has been recorded.
+                  </p>
+
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setShowCoordinatorForm(false);
+                    }}
+                    className="mt-5 rounded-xl bg-indigo-500 px-4 py-2.5 text-xs font-semibold text-white hover:bg-indigo-600"
+                  >
+                    Done
+                  </button>
+
+                </div>
+
+              ) : (
+
+                <>
+
+                  <label className="text-xs font-medium text-slate-400">
+                    Feedback
+                  </label>
+
+                  <textarea
+                    value={coordinatorFeedback}
+                    onChange={(e) =>
+                      setCoordinatorFeedback(
+                        e.target.value
+                      )
+                    }
+                    rows={6}
+                    placeholder="Write your feedback about mentoring activities..."
+                    className="mt-2 w-full resize-none rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-indigo-500/50"
+                  />
+
+                  <button
+                    onClick={submitCoordinatorFeedback}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-600"
+                  >
+                    <FiSend size={16} />
+                    Submit Feedback
+                  </button>
+
+                </>
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* =====================================================
+          INDIVIDUAL FEEDBACK MODAL
+      ===================================================== */}
+
+      {selectedFeedback && (
+
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+
+          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0D1422] shadow-2xl">
+
+            <div className="flex items-start justify-between border-b border-slate-800 p-5">
+
+              <div>
+
+                <p className="text-xs text-indigo-400">
+                  Mentee Feedback
+                </p>
+
+                <h2 className="mt-1 font-semibold text-white">
+                  {selectedFeedback.mentor}
+                </h2>
+
+              </div>
+
+              <button
+                onClick={() =>
+                  setSelectedFeedback(null)
+                }
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white"
+              >
+                <FiX />
+              </button>
+
+            </div>
+
 
             <div className="space-y-5 p-5">
 
-              {/* PEOPLE */}
-
               <div className="flex items-center gap-3">
 
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-semibold text-white">
-                  {selectedFeedback.mentee
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 font-bold text-indigo-400">
+                  {selectedFeedback.name
                     .split(" ")
-                    .map(
-                      (word) => word[0]
-                    )
-                    .join("")
-                    .slice(0, 2)}
+                    .map((word) => word[0])
+                    .slice(0, 2)
+                    .join("")}
                 </div>
 
                 <div>
 
                   <p className="text-sm font-semibold text-white">
-                    {selectedFeedback.mentee}
+                    {selectedFeedback.name}
                   </p>
 
-                  <p className="mt-1 text-xs text-slate-500">
-                    Mentor:{" "}
-                    <span className="text-slate-400">
-                      {selectedFeedback.mentor}
-                    </span>
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* RATING */}
-
-              <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-
-                <p className="mb-2 text-[11px] text-slate-600">
-                  Rating
-                </p>
-
-                <div className="flex items-center gap-3">
-
-                  <RatingStars
-                    rating={
+                  <div className="mt-1 flex items-center gap-2">
+                    {renderStars(
                       selectedFeedback.rating
-                    }
-                  />
+                    )}
 
-                  <span className="text-sm font-semibold text-white">
-                    {selectedFeedback.rating}
-                    .0 / 5.0
-                  </span>
+                    <span className="text-xs text-slate-500">
+                      {selectedFeedback.rating}/5
+                    </span>
+                  </div>
 
                 </div>
 
               </div>
 
-              {/* CATEGORY */}
 
-              <div className="flex flex-wrap gap-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
 
-                <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-medium text-indigo-400">
-                  {selectedFeedback.category}
-                </span>
-
-                <span
-                  className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${
-                    selectedFeedback.status ===
-                    "Pending"
-                      ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
-                      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                  }`}
-                >
-                  {selectedFeedback.status}
-                </span>
-
-              </div>
-
-              {/* COMMENT */}
-
-              <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-
-                <p className="mb-2 text-[11px] text-slate-600">
-                  Feedback
-                </p>
-
-                <p className="text-sm leading-6 text-slate-300">
-                  {selectedFeedback.comment}
+                <p className="text-sm leading-7 text-slate-400">
+                  "{selectedFeedback.comment}"
                 </p>
 
               </div>
 
-              {/* ACTIONS */}
 
-              <div className="flex justify-end gap-2 border-t border-slate-800 pt-5">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedFeedback(null)
-                  }
-                  className="rounded-xl border border-slate-800 px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-                >
-                  Close
-                </button>
+                <FiCalendar />
 
-                {selectedFeedback.status ===
-                  "Pending" && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      markAsReviewed(
-                        selectedFeedback.id
-                      )
-                    }
-                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20"
-                  >
-                    <FiCheckCircle />
-
-                    Mark as Reviewed
-                  </button>
-                )}
+                <span>
+                  Submitted on {selectedFeedback.date}
+                </span>
 
               </div>
 
@@ -888,6 +1026,133 @@ function Feedback() {
         </div>
 
       )}
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   SUMMARY CARD
+========================================================= */
+
+function SummaryCard({
+  icon,
+  title,
+  value,
+  description,
+  iconClass,
+  extra,
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+
+      <div className="flex items-start justify-between">
+
+        <div>
+
+          <p className="text-xs text-slate-500">
+            {title}
+          </p>
+
+          <p className="mt-2 text-2xl font-bold text-white">
+            {value}
+          </p>
+
+          {extra && (
+            <div className="mt-1">
+              {extra}
+            </div>
+          )}
+
+          <p className="mt-1 text-[11px] text-slate-500">
+            {description}
+          </p>
+
+        </div>
+
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconClass}`}
+        >
+          {icon}
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   RATING BAR
+========================================================= */
+
+function RatingBar({
+  label,
+  rating,
+  getProgressWidth,
+}) {
+  return (
+    <div>
+
+      <div className="mb-2 flex items-center justify-between">
+
+        <span className="text-xs text-slate-400">
+          {label}
+        </span>
+
+        <span className="text-xs font-semibold text-slate-300">
+          {rating}
+        </span>
+
+      </div>
+
+      <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+
+        <div
+          className="h-full rounded-full bg-amber-400 transition-all"
+          style={{
+            width: getProgressWidth(rating),
+          }}
+        />
+
+      </div>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   RATING DISTRIBUTION
+========================================================= */
+
+function RatingDistribution({
+  label,
+  percentage,
+}) {
+  return (
+    <div className="flex items-center gap-3">
+
+      <span className="w-14 text-xs text-slate-500">
+        {label}
+      </span>
+
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
+
+        <div
+          className="h-full rounded-full bg-amber-400"
+          style={{
+            width: `${percentage}%`,
+          }}
+        />
+
+      </div>
+
+      <span className="w-10 text-right text-xs text-slate-500">
+        {percentage}%
+      </span>
 
     </div>
   );

@@ -1,931 +1,779 @@
 import { useMemo, useState } from "react";
 import {
   FiCalendar,
-  FiClock,
-  FiUsers,
-  FiCheckCircle,
-  FiAlertCircle,
-  FiX,
   FiChevronLeft,
   FiChevronRight,
-  FiVideo,
+  FiClock,
+  FiMapPin,
+  FiPlus,
+  FiUsers,
+  FiX,
 } from "react-icons/fi";
 
-const initialSessions = [
-  {
-    id: 1,
-    date: "2026-08-16",
-    time: "10:00 AM",
-    duration: "45 min",
-    mentor: "Dr. Rajesh R",
-    mentee: "Jasmine A",
-    type: "Academic Guidance",
-    status: "Completed",
-    mode: "Online",
-  },
-  {
-    id: 2,
-    date: "2026-08-16",
-    time: "11:30 AM",
-    duration: "30 min",
-    mentor: "Dr. Anitha",
-    mentee: "Frinu P",
-    type: "Progress Review",
-    status: "Upcoming",
-    mode: "Online",
-  },
-  {
-    id: 3,
-    date: "2026-08-16",
-    time: "02:00 PM",
-    duration: "45 min",
-    mentor: "Dr. Vivek",
-    mentee: "Sanjay K",
-    type: "Project Discussion",
-    status: "Upcoming",
-    mode: "In Person",
-  },
-  {
-    id: 4,
-    date: "2026-08-17",
-    time: "10:30 AM",
-    duration: "30 min",
-    mentor: "Dr. Ramesh",
-    mentee: "Akhil T",
-    type: "Academic Guidance",
-    status: "Upcoming",
-    mode: "Online",
-  },
-  {
-    id: 5,
-    date: "2026-08-18",
-    time: "03:00 PM",
-    duration: "45 min",
-    mentor: "Dr. Sunita",
-    mentee: "Megha S",
-    type: "Career Guidance",
-    status: "Upcoming",
-    mode: "Online",
-  },
-  {
-    id: 6,
-    date: "2026-08-19",
-    time: "11:00 AM",
-    duration: "30 min",
-    mentor: "Dr. Rajesh R",
-    mentee: "Alan Mathew",
-    type: "Progress Review",
-    status: "Scheduled",
-    mode: "In Person",
-  },
-  {
-    id: 7,
-    date: "2026-08-20",
-    time: "01:30 PM",
-    duration: "45 min",
-    mentor: "Dr. Anitha",
-    mentee: "Sandra Joseph",
-    type: "Project Discussion",
-    status: "Scheduled",
-    mode: "Online",
-  },
-  {
-    id: 8,
-    date: "2026-08-21",
-    time: "10:00 AM",
-    duration: "30 min",
-    mentor: "Dr. Vivek",
-    mentee: "Arjun P",
-    type: "Career Guidance",
-    status: "Scheduled",
-    mode: "Online",
-  },
-];
-
-const weekDays = [
-  {
-    date: "2026-08-16",
-    day: "Sun",
-    number: "16",
-  },
-  {
-    date: "2026-08-17",
-    day: "Mon",
-    number: "17",
-  },
-  {
-    date: "2026-08-18",
-    day: "Tue",
-    number: "18",
-  },
-  {
-    date: "2026-08-19",
-    day: "Wed",
-    number: "19",
-  },
-  {
-    date: "2026-08-20",
-    day: "Thu",
-    number: "20",
-  },
-  {
-    date: "2026-08-21",
-    day: "Fri",
-    number: "21",
-  },
-  {
-    date: "2026-08-22",
-    day: "Sat",
-    number: "22",
-  },
-];
-
 function Calendar() {
-  const [sessions, setSessions] =
-    useState(initialSessions);
-
-  const [selectedDate, setSelectedDate] =
-    useState("2026-08-16");
-
-  const [selectedSession, setSelectedSession] =
-    useState(null);
-
-  const [viewMode, setViewMode] =
-    useState("week");
-
-  const [statusFilter, setStatusFilter] =
-    useState("All");
-
-  const [message, setMessage] = useState("");
-
-  const todaySessions = sessions.filter(
-    (session) =>
-      session.date === "2026-08-16"
+  const [currentDate, setCurrentDate] = useState(
+    new Date(2025, 7, 1)
   );
 
-  const upcomingSessions = sessions.filter(
-    (session) =>
-      session.status === "Upcoming" ||
-      session.status === "Scheduled"
+  const [selectedDate, setSelectedDate] = useState(
+    new Date(2025, 7, 12)
   );
 
-  const completedSessions = sessions.filter(
-    (session) =>
-      session.status === "Completed"
+  const [showModal, setShowModal] = useState(false);
+
+  const [events, setEvents] = useState([
+    {
+      id: 1,
+      date: "2025-08-05",
+      title: "Mentoring Session",
+      mentor: "Dr. Ramesh Kumar",
+      mentee: "Jasmine A",
+      time: "10:00 AM - 10:45 AM",
+      location: "Room 204",
+      type: "session",
+    },
+    {
+      id: 2,
+      date: "2025-08-08",
+      title: "Mentoring Session",
+      mentor: "Dr. Meena S",
+      mentee: "Rahul Kumar",
+      time: "11:00 AM - 11:45 AM",
+      location: "Room 302",
+      type: "session",
+    },
+    {
+      id: 3,
+      date: "2025-08-12",
+      title: "Mentoring Session",
+      mentor: "Dr. Ramesh Kumar",
+      mentee: "Jasmine A",
+      time: "10:00 AM - 10:45 AM",
+      location: "Room 204",
+      type: "session",
+    },
+    {
+      id: 4,
+      date: "2025-08-12",
+      title: "Department Meeting",
+      mentor: "Coordinator",
+      mentee: "All Mentors",
+      time: "2:00 PM - 3:00 PM",
+      location: "Conference Room",
+      type: "meeting",
+    },
+    {
+      id: 5,
+      date: "2025-08-14",
+      title: "Mentoring Session",
+      mentor: "Dr. Anitha Joseph",
+      mentee: "Ananya S",
+      time: "9:30 AM - 10:15 AM",
+      location: "Room 105",
+      type: "session",
+    },
+    {
+      id: 6,
+      date: "2025-08-18",
+      title: "Mentoring Session",
+      mentor: "Dr. Arun Mathew",
+      mentee: "Arjun P",
+      time: "11:30 AM - 12:15 PM",
+      location: "Room 210",
+      type: "session",
+    },
+    {
+      id: 7,
+      date: "2025-08-20",
+      title: "Mentor Review Meeting",
+      mentor: "Coordinator",
+      mentee: "All Mentors",
+      time: "3:00 PM - 4:00 PM",
+      location: "Seminar Hall",
+      type: "meeting",
+    },
+    {
+      id: 8,
+      date: "2025-08-22",
+      title: "Mentoring Session",
+      mentor: "Mr. Arun Joseph",
+      mentee: "Akhil Thomas",
+      time: "10:30 AM - 11:15 AM",
+      location: "Room 112",
+      type: "session",
+    },
+    {
+      id: 9,
+      date: "2025-08-26",
+      title: "Mentoring Session",
+      mentor: "Dr. Sunita Pillai",
+      mentee: "Priya S",
+      time: "12:00 PM - 12:45 PM",
+      location: "Room 201",
+      type: "session",
+    },
+  ]);
+
+  const monthName = currentDate.toLocaleString("en-US", {
+    month: "long",
+  });
+
+  const year = currentDate.getFullYear();
+
+  const getDateKey = (date) => {
+    return `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  const selectedDateKey = getDateKey(selectedDate);
+
+  const selectedEvents = events.filter(
+    (event) => event.date === selectedDateKey
   );
 
-  const filteredSessions = useMemo(() => {
-    return sessions.filter((session) => {
-      const dateMatch =
-        session.date === selectedDate;
-
-      const statusMatch =
-        statusFilter === "All" ||
-        session.status === statusFilter;
-
-      return dateMatch && statusMatch;
-    });
-  }, [sessions, selectedDate, statusFilter]);
-
-  const markCompleted = (id) => {
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === id
-          ? {
-              ...session,
-              status: "Completed",
-            }
-          : session
+  const changeMonth = (amount) => {
+    setCurrentDate(
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + amount,
+        1
       )
-    );
-
-    setSelectedSession(null);
-    setMessage(
-      "Session marked as completed."
     );
   };
 
-  const cancelSession = (id) => {
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === id
-          ? {
-              ...session,
-              status: "Cancelled",
-            }
-          : session
-      )
+  const goToToday = () => {
+    const today = new Date();
+
+    setCurrentDate(
+      new Date(today.getFullYear(), today.getMonth(), 1)
     );
 
-    setSelectedSession(null);
-    setMessage(
-      "Session marked as cancelled."
-    );
+    setSelectedDate(today);
   };
 
-  const getStatusClass = (status) => {
-    if (status === "Completed") {
-      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
+  const calendarDays = useMemo(() => {
+    const firstDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+
+    const lastDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    );
+
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+
+    const days = [];
+
+    for (let i = 0; i < startDay; i++) {
+      days.push(null);
     }
 
-    if (status === "Upcoming") {
-      return "border-indigo-500/20 bg-indigo-500/10 text-indigo-400";
+    for (let day = 1; day <= totalDays; day++) {
+      days.push(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          day
+        )
+      );
     }
 
-    if (status === "Scheduled") {
-      return "border-purple-500/20 bg-purple-500/10 text-purple-400";
-    }
+    return days;
+  }, [currentDate]);
 
-    return "border-red-500/20 bg-red-500/10 text-red-400";
+  const addEvent = (event) => {
+    setEvents((prev) => [
+      ...prev,
+      {
+        ...event,
+        id: Date.now(),
+      },
+    ]);
+
+    setShowModal(false);
   };
 
   return (
-    <div className="p-5 sm:p-6 lg:p-7">
-
-      {/* =================================
-          HEADER
-      ================================= */}
-
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
+    <div className="min-h-full bg-[#080C14] p-6 text-white">
+      {/* HEADER */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-white">
-            Calendar
-          </h1>
-
-          <p className="mt-1 text-sm text-slate-400">
-            Manage and monitor mentoring sessions
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-
-          <button
-            type="button"
-            onClick={() =>
-              setSelectedDate("2026-08-16")
-            }
-            className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-          >
-            Today
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setViewMode(
-                viewMode === "week"
-                  ? "list"
-                  : "week"
-              )
-            }
-            className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2.5 text-xs font-medium text-white shadow-lg shadow-indigo-500/20"
-          >
-            {viewMode === "week"
-              ? "List View"
-              : "Week View"}
-          </button>
-
-        </div>
-
-      </div>
-
-      {/* =================================
-          MESSAGE
-      ================================= */}
-
-      {message && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-emerald-400">
-
-          <FiCheckCircle />
-
-          <p className="text-xs">
-            {message}
-          </p>
-
-          <button
-            type="button"
-            onClick={() => setMessage("")}
-            className="ml-auto"
-          >
-            <FiX />
-          </button>
-
-        </div>
-      )}
-
-      {/* =================================
-          SUMMARY CARDS
-      ================================= */}
-
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-        <SummaryCard
-          label="Today's Sessions"
-          value={todaySessions.length}
-          description="Scheduled today"
-          icon={<FiCalendar />}
-          iconClass="bg-indigo-500/10 text-indigo-400"
-        />
-
-        <SummaryCard
-          label="Upcoming"
-          value={upcomingSessions.length}
-          description="Future sessions"
-          icon={<FiClock />}
-          iconClass="bg-purple-500/10 text-purple-400"
-        />
-
-        <SummaryCard
-          label="Completed"
-          value={completedSessions.length}
-          description="Sessions completed"
-          icon={<FiCheckCircle />}
-          iconClass="bg-emerald-500/10 text-emerald-400"
-        />
-
-        <SummaryCard
-          label="Total Sessions"
-          value={sessions.length}
-          description="Current schedule"
-          icon={<FiUsers />}
-          iconClass="bg-amber-500/10 text-amber-400"
-        />
-
-      </div>
-
-      {/* =================================
-          CALENDAR
-      ================================= */}
-
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70">
-
-        {/* CALENDAR HEADER */}
-
-        <div className="flex flex-col gap-4 border-b border-slate-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-
-          <div>
-
-            <h2 className="text-base font-semibold text-white">
-              August 2026
-            </h2>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Select a day to view scheduled sessions
-            </p>
-
-          </div>
-
-          <div className="flex items-center gap-2">
-
-            <button
-              type="button"
-              className="rounded-lg border border-slate-800 p-2 text-slate-500 transition hover:border-slate-700 hover:text-white"
-            >
-              <FiChevronLeft />
-            </button>
-
-            <button
-              type="button"
-              className="rounded-lg border border-slate-800 p-2 text-slate-500 transition hover:border-slate-700 hover:text-white"
-            >
-              <FiChevronRight />
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* WEEK DAYS */}
-
-        {viewMode === "week" && (
-
-          <div className="grid grid-cols-7 border-b border-slate-800">
-
-            {weekDays.map((day) => {
-
-              const daySessions =
-                sessions.filter(
-                  (session) =>
-                    session.date === day.date
-                );
-
-              const isSelected =
-                selectedDate === day.date;
-
-              return (
-                <button
-                  key={day.date}
-                  type="button"
-                  onClick={() =>
-                    setSelectedDate(day.date)
-                  }
-                  className={`min-h-[92px] border-r border-slate-800 p-2 text-center transition last:border-r-0 sm:p-3 ${
-                    isSelected
-                      ? "bg-indigo-500/10"
-                      : "hover:bg-slate-800/30"
-                  }`}
-                >
-
-                  <p
-                    className={`text-[10px] font-medium ${
-                      isSelected
-                        ? "text-indigo-400"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    {day.day}
-                  </p>
-
-                  <div
-                    className={`mx-auto mt-2 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                      isSelected
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
-                        : "text-slate-300"
-                    }`}
-                  >
-                    {day.number}
-                  </div>
-
-                  {daySessions.length > 0 && (
-
-                    <div className="mt-2 flex justify-center gap-1">
-
-                      {daySessions
-                        .slice(0, 3)
-                        .map((session) => (
-
-                          <span
-                            key={session.id}
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              session.status ===
-                              "Completed"
-                                ? "bg-emerald-400"
-                                : session.status ===
-                                  "Cancelled"
-                                ? "bg-red-400"
-                                : "bg-indigo-400"
-                            }`}
-                          />
-
-                        ))}
-
-                    </div>
-
-                  )}
-
-                </button>
-              );
-            })}
-
-          </div>
-
-        )}
-
-        {/* =================================
-            SELECTED DAY HEADER
-        ================================= */}
-
-        <div className="flex flex-col gap-3 border-b border-slate-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-
-          <div>
-
-            <h3 className="text-sm font-semibold text-white">
-              Sessions for{" "}
-              {formatDate(selectedDate)}
-            </h3>
-
-            <p className="mt-1 text-xs text-slate-500">
-              {filteredSessions.length} session
-              {filteredSessions.length !== 1
-                ? "s"
-                : ""}{" "}
-              scheduled
-            </p>
-
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(
-                e.target.value
-              )
-            }
-            className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
-          >
-
-            <option value="All">
-              All Statuses
-            </option>
-
-            <option value="Upcoming">
-              Upcoming
-            </option>
-
-            <option value="Scheduled">
-              Scheduled
-            </option>
-
-            <option value="Completed">
-              Completed
-            </option>
-
-            <option value="Cancelled">
-              Cancelled
-            </option>
-
-          </select>
-
-        </div>
-
-        {/* =================================
-            SESSION LIST
-        ================================= */}
-
-        {filteredSessions.length > 0 ? (
-
-          <div className="divide-y divide-slate-800">
-
-            {filteredSessions.map((session) => (
-
-              <div
-                key={session.id}
-                className="p-5 transition hover:bg-slate-800/20"
-              >
-
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-                  {/* TIME */}
-
-                  <div className="flex items-center gap-4">
-
-                    <div className="w-20 shrink-0">
-
-                      <p className="text-sm font-semibold text-white">
-                        {session.time}
-                      </p>
-
-                      <p className="mt-1 text-[10px] text-slate-600">
-                        {session.duration}
-                      </p>
-
-                    </div>
-
-                    <div className="h-10 w-px bg-slate-800" />
-
-                    {/* PEOPLE */}
-
-                    <div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-
-                        <p className="text-sm font-medium text-white">
-                          {session.mentor}
-                        </p>
-
-                        <span className="text-slate-700">
-                          →
-                        </span>
-
-                        <p className="text-sm font-medium text-slate-300">
-                          {session.mentee}
-                        </p>
-
-                      </div>
-
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-
-                        <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-[9px] text-indigo-400">
-                          {session.type}
-                        </span>
-
-                        <span className="inline-flex items-center gap-1 text-[10px] text-slate-600">
-
-                          {session.mode ===
-                          "Online" ? (
-                            <FiVideo />
-                          ) : (
-                            <FiUsers />
-                          )}
-
-                          {session.mode}
-
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* ACTIONS */}
-
-                  <div className="flex items-center gap-2">
-
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${getStatusClass(
-                        session.status
-                      )}`}
-                    >
-                      {session.status}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedSession(
-                          session
-                        )
-                      }
-                      className="rounded-lg border border-slate-800 px-3 py-2 text-[10px] font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-                    >
-                      View
-                    </button>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        ) : (
-
-          <div className="px-5 py-14 text-center">
-
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800/60 text-slate-600">
-
-              <FiCalendar className="text-2xl" />
-
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <FiCalendar className="text-indigo-400 text-xl" />
             </div>
 
-            <h3 className="mt-4 text-sm font-medium text-white">
-              No sessions scheduled
-            </h3>
+            <div>
+              <h1 className="text-2xl font-bold">
+                Calendar
+              </h1>
 
-            <p className="mt-1 text-xs text-slate-500">
-              There are no sessions matching the selected filters.
-            </p>
-
+              <p className="text-sm text-slate-400 mt-1">
+                Manage mentoring sessions and department events
+              </p>
+            </div>
           </div>
+        </div>
 
-        )}
-
+        <button
+          onClick={() => setShowModal(true)}
+          className="h-10 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition flex items-center justify-center gap-2 text-sm font-medium"
+        >
+          <FiPlus />
+          Add Event
+        </button>
       </div>
 
-      {/* =================================
-          SESSION DETAILS MODAL
-      ================================= */}
+      {/* CALENDAR + SIDEBAR */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_350px] gap-6">
+        {/* CALENDAR */}
+        <div className="rounded-2xl border border-slate-800 bg-[#0D1422] overflow-hidden">
+          {/* CALENDAR HEADER */}
+          <div className="p-5 border-b border-slate-800">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => changeMonth(-1)}
+                className="w-9 h-9 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <FiChevronLeft />
+              </button>
 
-      {selectedSession && (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0D1220] shadow-2xl">
-
-            {/* HEADER */}
-
-            <div className="flex items-start justify-between border-b border-slate-800 px-5 py-4">
-
-              <div>
-
-                <h2 className="text-base font-semibold text-white">
-                  Session Details
+              <div className="text-center">
+                <h2 className="text-lg font-semibold">
+                  {monthName} {year}
                 </h2>
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Mentoring session information
-                </p>
-
+                <button
+                  onClick={goToToday}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 mt-1"
+                >
+                  Go to today
+                </button>
               </div>
 
               <button
-                type="button"
-                onClick={() =>
-                  setSelectedSession(
-                    null
-                  )
-                }
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+                onClick={() => changeMonth(1)}
+                className="w-9 h-9 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
-                <FiX />
+                <FiChevronRight />
               </button>
-
             </div>
-
-            {/* CONTENT */}
-
-            <div className="space-y-5 p-5">
-
-              {/* DATE/TIME */}
-
-              <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-
-                <div className="flex items-center gap-3">
-
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
-                    <FiCalendar />
-                  </div>
-
-                  <div>
-
-                    <p className="text-sm font-medium text-white">
-                      {formatDate(
-                        selectedSession.date
-                      )}
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500">
-                      {selectedSession.time} ·{" "}
-                      {selectedSession.duration}
-                    </p>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* PEOPLE */}
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-
-                <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-
-                  <p className="text-[10px] text-slate-600">
-                    Mentor
-                  </p>
-
-                  <p className="mt-1 text-sm font-medium text-white">
-                    {selectedSession.mentor}
-                  </p>
-
-                </div>
-
-                <div className="rounded-xl border border-slate-800 bg-slate-950/30 p-4">
-
-                  <p className="text-[10px] text-slate-600">
-                    Mentee
-                  </p>
-
-                  <p className="mt-1 text-sm font-medium text-white">
-                    {selectedSession.mentee}
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* TYPE + MODE */}
-
-              <div className="flex flex-wrap gap-2">
-
-                <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-medium text-indigo-400">
-                  {selectedSession.type}
-                </span>
-
-                <span className="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] font-medium text-slate-400">
-                  {selectedSession.mode}
-                </span>
-
-                <span
-                  className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${getStatusClass(
-                    selectedSession.status
-                  )}`}
-                >
-                  {selectedSession.status}
-                </span>
-
-              </div>
-
-              {/* ACTIONS */}
-
-              <div className="flex flex-wrap justify-end gap-2 border-t border-slate-800 pt-5">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedSession(
-                      null
-                    )
-                  }
-                  className="rounded-xl border border-slate-800 px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
-                >
-                  Close
-                </button>
-
-                {(selectedSession.status ===
-                  "Upcoming" ||
-                  selectedSession.status ===
-                    "Scheduled") && (
-
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        cancelSession(
-                          selectedSession.id
-                        )
-                      }
-                      className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs font-medium text-red-400 transition hover:bg-red-500/20"
-                    >
-                      <FiAlertCircle />
-                      Cancel
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        markCompleted(
-                          selectedSession.id
-                        )
-                      }
-                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20"
-                    >
-                      <FiCheckCircle />
-                      Mark Completed
-                    </button>
-                  </>
-
-                )}
-
-              </div>
-
-            </div>
-
           </div>
 
+          {/* WEEK DAYS */}
+          <div className="grid grid-cols-7 border-b border-slate-800">
+            {[
+              "Sun",
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+            ].map((day) => (
+              <div
+                key={day}
+                className="py-3 text-center text-xs font-medium text-slate-500"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* DAYS */}
+          <div className="grid grid-cols-7">
+            {calendarDays.map((date, index) => {
+              if (!date) {
+                return (
+                  <div
+                    key={`empty-${index}`}
+                    className="min-h-[120px] border-b border-r border-slate-800/70"
+                  />
+                );
+              }
+
+              const dateKey = getDateKey(date);
+
+              const dayEvents = events.filter(
+                (event) => event.date === dateKey
+              );
+
+              const isSelected =
+                selectedDateKey === dateKey;
+
+              const isToday =
+                getDateKey(new Date()) === dateKey;
+
+              return (
+                <button
+                  key={dateKey}
+                  onClick={() => setSelectedDate(date)}
+                  className={`min-h-[120px] text-left p-2 border-b border-r border-slate-800/70 hover:bg-slate-800/30 transition ${
+                    isSelected
+                      ? "bg-indigo-500/5 ring-1 ring-inset ring-indigo-500/40"
+                      : ""
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <span
+                      className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-medium ${
+                        isToday
+                          ? "bg-indigo-600 text-white"
+                          : isSelected
+                          ? "bg-indigo-500/20 text-indigo-300"
+                          : "text-slate-400"
+                      }`}
+                    >
+                      {date.getDate()}
+                    </span>
+
+                    {dayEvents.length > 0 && (
+                      <span className="text-[10px] text-slate-600">
+                        {dayEvents.length}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    {dayEvents.slice(0, 2).map((event) => (
+                      <div
+                        key={event.id}
+                        className={`px-2 py-1 rounded text-[10px] truncate ${
+                          event.type === "meeting"
+                            ? "bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                            : "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"
+                        }`}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+
+                    {dayEvents.length > 2 && (
+                      <p className="text-[10px] text-slate-500 px-1">
+                        +{dayEvents.length - 2} more
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-      )}
+        {/* RIGHT PANEL */}
+        <div className="space-y-6">
+          {/* SELECTED DAY */}
+          <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-base font-semibold">
+                  {selectedDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                  })}
+                </h2>
 
-    </div>
-  );
-}
+                <p className="text-xs text-slate-500 mt-1">
+                  {selectedDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
 
-/* =================================
-   SUMMARY CARD
-================================= */
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                <FiCalendar className="text-indigo-400" />
+              </div>
+            </div>
 
-function SummaryCard({
-  label,
-  value,
-  description,
-  icon,
-  iconClass,
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            {selectedEvents.length === 0 ? (
+              <div className="py-8 text-center">
+                <FiCalendar className="mx-auto text-2xl text-slate-600 mb-3" />
 
-      <div className="flex items-center justify-between">
+                <p className="text-sm text-slate-400">
+                  No events scheduled
+                </p>
 
-        <div>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 mt-2"
+                >
+                  Add an event
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {selectedEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
-          <p className="text-xs font-medium text-slate-500">
-            {label}
-          </p>
+          {/* LEGEND */}
+          <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+            <h2 className="text-sm font-semibold mb-4">
+              Calendar Legend
+            </h2>
 
-          <p className="mt-2 text-2xl font-semibold text-white">
-            {value}
-          </p>
+            <div className="space-y-3">
+              <LegendItem
+                label="Mentoring Session"
+                className="bg-indigo-500"
+              />
 
-          <p className="mt-1 text-[11px] text-slate-600">
-            {description}
-          </p>
+              <LegendItem
+                label="Department Meeting"
+                className="bg-purple-500"
+              />
+            </div>
+          </div>
 
+          {/* MONTH SUMMARY */}
+          <div className="rounded-2xl border border-slate-800 bg-[#0D1422] p-5">
+            <h2 className="text-sm font-semibold mb-4">
+              Monthly Summary
+            </h2>
+
+            <div className="space-y-4">
+              <SummaryRow
+                icon={FiCalendar}
+                label="Total Events"
+                value={events.filter((event) =>
+                  event.date.startsWith(
+                    `${year}-${String(
+                      currentDate.getMonth() + 1
+                    ).padStart(2, "0")}`
+                  )
+                ).length}
+              />
+
+              <SummaryRow
+                icon={FiUsers}
+                label="Mentoring Sessions"
+                value={
+                  events.filter(
+                    (event) =>
+                      event.type === "session" &&
+                      event.date.startsWith(
+                        `${year}-${String(
+                          currentDate.getMonth() + 1
+                        ).padStart(2, "0")}`
+                      )
+                  ).length
+                }
+              />
+
+              <SummaryRow
+                icon={FiClock}
+                label="Department Meetings"
+                value={
+                  events.filter(
+                    (event) =>
+                      event.type === "meeting" &&
+                      event.date.startsWith(
+                        `${year}-${String(
+                          currentDate.getMonth() + 1
+                        ).padStart(2, "0")}`
+                      )
+                  ).length
+                }
+              />
+            </div>
+          </div>
         </div>
-
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}
-        >
-          {icon}
-        </div>
-
       </div>
 
+      {/* ADD EVENT MODAL */}
+      {showModal && (
+        <AddEventModal
+          selectedDate={selectedDate}
+          onClose={() => setShowModal(false)}
+          onAdd={addEvent}
+        />
+      )}
     </div>
   );
 }
 
-/* =================================
-   FORMAT DATE
-================================= */
+/* EVENT CARD */
+function EventCard({ event }) {
+  return (
+    <div
+      className={`rounded-xl border p-4 ${
+        event.type === "meeting"
+          ? "bg-purple-500/5 border-purple-500/20"
+          : "bg-indigo-500/5 border-indigo-500/20"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-white">
+            {event.title}
+          </p>
 
-function formatDate(dateString) {
-  const date = new Date(
-    `${dateString}T00:00:00`
+          <p className="text-xs text-slate-500 mt-1">
+            {event.mentor}
+          </p>
+        </div>
+
+        <span
+          className={`text-[10px] px-2 py-1 rounded-md ${
+            event.type === "meeting"
+              ? "bg-purple-500/10 text-purple-300"
+              : "bg-indigo-500/10 text-indigo-300"
+          }`}
+        >
+          {event.type === "meeting"
+            ? "Meeting"
+            : "Session"}
+        </span>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <FiClock className="text-slate-500" />
+          {event.time}
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <FiMapPin className="text-slate-500" />
+          {event.location}
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <FiUsers className="text-slate-500" />
+          {event.mentee}
+        </div>
+      </div>
+    </div>
   );
+}
 
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+/* LEGEND */
+function LegendItem({ label, className }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        className={`w-3 h-3 rounded-full ${className}`}
+      />
+
+      <span className="text-xs text-slate-400">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* SUMMARY ROW */
+function SummaryRow({ icon: Icon, label, value }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-slate-800/70 flex items-center justify-center">
+          <Icon className="text-slate-400 text-sm" />
+        </div>
+
+        <span className="text-xs text-slate-400">
+          {label}
+        </span>
+      </div>
+
+      <span className="text-sm font-semibold text-white">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/* ADD EVENT MODAL */
+function AddEventModal({
+  selectedDate,
+  onClose,
+  onAdd,
+}) {
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState("session");
+  const [mentor, setMentor] = useState("Dr. Ramesh Kumar");
+  const [mentee, setMentee] = useState("Jasmine A");
+  const [time, setTime] = useState("10:00 AM - 10:45 AM");
+  const [location, setLocation] = useState("Room 204");
+
+  const submit = (e) => {
+    e.preventDefault();
+
+    if (!title.trim()) return;
+
+    const date = `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(
+      selectedDate.getDate()
+    ).padStart(2, "0")}`;
+
+    onAdd({
+      date,
+      title,
+      type,
+      mentor,
+      mentee,
+      time,
+      location,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-[#0D1422] shadow-2xl">
+        {/* MODAL HEADER */}
+        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+          <div>
+            <h2 className="text-lg font-semibold">
+              Add Calendar Event
+            </h2>
+
+            <p className="text-xs text-slate-500 mt-1">
+              {selectedDate.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800"
+          >
+            <FiX />
+          </button>
+        </div>
+
+        {/* FORM */}
+        <form onSubmit={submit} className="p-5 space-y-4">
+          <div>
+            <label className="text-xs text-slate-400">
+              Event Title
+            </label>
+
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter event title"
+              className="mt-2 w-full h-10 px-3 rounded-lg bg-slate-900/60 border border-slate-700 text-sm text-white outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-slate-400">
+              Event Type
+            </label>
+
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="mt-2 w-full h-10 px-3 rounded-lg bg-slate-900/60 border border-slate-700 text-sm text-white outline-none focus:border-indigo-500"
+            >
+              <option value="session">
+                Mentoring Session
+              </option>
+
+              <option value="meeting">
+                Department Meeting
+              </option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-slate-400">
+                Mentor
+              </label>
+
+              <select
+                value={mentor}
+                onChange={(e) => setMentor(e.target.value)}
+                className="mt-2 w-full h-10 px-3 rounded-lg bg-slate-900/60 border border-slate-700 text-sm text-white outline-none focus:border-indigo-500"
+              >
+                <option>Dr. Ramesh Kumar</option>
+                <option>Dr. Sunita Pillai</option>
+                <option>Dr. Meena S</option>
+                <option>Dr. Anitha Joseph</option>
+                <option>Dr. Arun Mathew</option>
+                <option>Mr. Arun Joseph</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-400">
+                Mentee
+              </label>
+
+              <input
+                value={mentee}
+                onChange={(e) => setMentee(e.target.value)}
+                className="mt-2 w-full h-10 px-3 rounded-lg bg-slate-900/60 border border-slate-700 text-sm text-white outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-slate-400">
+                Time
+              </label>
+
+              <input
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                placeholder="10:00 AM - 10:45 AM"
+                className="mt-2 w-full h-10 px-3 rounded-lg bg-slate-900/60 border border-slate-700 text-sm text-white outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-400">
+                Location
+              </label>
+
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Room 204"
+                className="mt-2 w-full h-10 px-3 rounded-lg bg-slate-900/60 border border-slate-700 text-sm text-white outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          {/* BUTTONS */}
+          <div className="flex justify-end gap-3 pt-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 h-10 rounded-lg border border-slate-700 text-sm text-slate-300 hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              className="px-4 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm font-medium"
+            >
+              Add Event
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default Calendar;
