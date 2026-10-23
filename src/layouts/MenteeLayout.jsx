@@ -1,6 +1,6 @@
 import { useState } from "react";
-import MenteeSidebar from "./MenteeSidebar";
-import MenteeNavbar from "./MenteeNavbar";
+import MenteeSidebar from "../components/layout/MenteeSidebar";
+import MenteeNavbar from "../components/layout/MenteeNavbar";
 
 function MenteeLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);

@@ -11,6 +11,7 @@ import {
 import CoordinatorLayout from "./layouts/CoordinatorLayout";
 import MentorLayout from "./layouts/MentorLayout";
 import HODLayout from "./layouts/HODLayout";
+import MenteeLayout from "./layouts/MenteeLayout";
 
 // =========================
 // Login
@@ -69,7 +70,7 @@ import MenteeSessions from "./pages/mentee/Sessions";
 import MenteeFindMentor from "./pages/mentee/FindMentorMentee";
 import MenteeOTPVerification from "./pages/mentee/OTPVerification";
 import MenteeHODNotices from "./pages/mentee/HODNotices";
-import MenteeFeedback from "./pages/mentee/MenteeFeedback";
+import MenteeFeedback from "./pages/mentee/Feedback";
 
 function App() {
   return (
@@ -379,47 +380,63 @@ function App() {
             MENTEE
         ================================================== */}
 
-        <Route
-          path="/mentee"
-          element={
-            <MenteeDashboard />
-          }
-        />  
+        {/* ==================================================
+    MENTEE
+================================================== */}
 
-        <Route
-          path="/mentee/sessions"
-          element={
-            <MenteeSessions />
-          }
-        />  
+<Route
+  path="/mentee"
+  element={
+    <MenteeLayout>
+      <MenteeDashboard />
+    </MenteeLayout>
+  }
+/>
 
-        <Route
-          path="/mentee/find-mentor"
-          element={
-            <MenteeFindMentorMentee />
-          }
-        />  
+<Route
+  path="/mentee/sessions"
+  element={
+    <MenteeLayout>
+      <MenteeSessions />
+    </MenteeLayout>
+  }
+/>
 
-        <Route
-          path="/mentee/otp"
-          element={
-            <MenteeOTPVerification />
-          }
-        />
+<Route
+  path="/mentee/find-mentor"
+  element={
+    <MenteeLayout>
+      <MenteeFindMentor />
+    </MenteeLayout>
+  }
+/>
 
-        <Route
-          path="/mentee/hod-notices"
-          element={
-            <MenteeHODNotices />
-          }
-        />
+<Route
+  path="/mentee/otp"
+  element={
+    <MenteeLayout>
+      <MenteeOTPVerification />
+    </MenteeLayout>
+  }
+/>
 
-        <Route
-          path="/mentee/feedback"
-          element={
-            <MenteeFeedback />
-          }
-        />
+<Route
+  path="/mentee/hod-notices"
+  element={
+    <MenteeLayout>
+      <MenteeHODNotices />
+    </MenteeLayout>
+  }
+/>
+
+<Route
+  path="/mentee/feedback"
+  element={
+    <MenteeLayout>
+      <MenteeFeedback />
+    </MenteeLayout>
+  }
+/>
 
         {/* ==================================================
             DEFAULT
